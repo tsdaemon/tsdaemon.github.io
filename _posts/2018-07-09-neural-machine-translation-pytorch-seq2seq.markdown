@@ -6,12 +6,12 @@ categories: neural machine translation, deep learning, natural language processi
 ---
 ***Recently I did a [3-day workshop about Deep Learning for Natural Language Processing](https://github.com/tsdaemon/dl-nlp-2018).
 Clearly 3 days was not enough to cover all topics in this broad field, therefore
-I decided to create a series of tutorials in [PyTorch](https://pytorch.org/),
-in which I will start with a simple neural translation model and gradually improve it using
-modern neural methods and techniques.***
+I decided to create a series of practical tutorials about Neural Machine Translation
+in [PyTorch](https://pytorch.org/).***
 
-*In this first tutorial, I am going to create Ukrainian-German translator with
-simple encoder-decoder model.*
+*I will start with a simple neural translation model and gradually improve it using
+modern neural methods and techniques. In this first tutorial, I am going to create
+Ukrainian-German translator with an encoder-decoder model.*
 
 # Introduction
 
