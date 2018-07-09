@@ -1,7 +1,7 @@
 title: Daemon Engineer blog
 email: tsdaemon@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  Science and education enthusiast blog. Stories and tutorials about deep learning,
+  Blog of science and education enthusiast. Stories and tutorials about deep learning,
   reinforcement learning, natural language processing, data visualization and software development.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
