@@ -11,7 +11,7 @@
 
 
 
-    <title>Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder</title>
+    <title>Neural Machine Translation With PyTorch</title>
     <meta name="HandheldFriendly" content="True" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet"
@@ -33,24 +33,24 @@
      <!--title below is coming from _includes/dynamic_title-->
     <meta property="og:site_name" content="Daemon Engineer blog" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder" />
-    <meta property="og:description" content="Recently I did a 3-day workshop about Deep Learning for Natural Language Processing. Clearly 3 days was not enough to cover all topics in this broad field, therefore I decided to create a series of practical tutorials about Neural Machine Translation in PyTorch. I will start with a simple neural" />
+    <meta property="og:title" content="Neural Machine Translation With PyTorch" />
+    <meta property="og:description" content="Recently I did a 3-day workshop about Deep Learning for Natural Language Processing. Clearly 3 days was not enough to cover all topics in this broad field, therefore I decided to create a series of practical tutorials about Neural Machine Translation in PyTorch. In this series I will start with" />
     <meta property="og:url" content="http://localhost:4000/2018/07/08/nmt-with-pytorch-seq-to-seq.html" />
     <meta property="og:image" content="http://localhost:4000/assets/images/blog-cover.jpg" />
     <meta property="article:publisher" content="https://www.facebook.com/anatolii.stn" />
     <meta property="article:author" content="https://www.facebook.com/anatolii.stn" />
     <meta property="article:published_time" content="2018-07-08T15:37:21+03:00" />
     <meta property="article:modified_time" content="2018-07-08T15:37:21+03:00" />
-    <meta property="article:tag" content="Nmt," />
+    <meta property="article:tag" content="Nmt" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder" />
-    <meta name="twitter:description" content="Recently I did a 3-day workshop about Deep Learning for Natural Language Processing. Clearly 3 days was not enough to cover all topics in this broad field, therefore I decided to create a series of practical tutorials about Neural Machine Translation in PyTorch. I will start with a simple neural" />
+    <meta name="twitter:title" content="Neural Machine Translation With PyTorch" />
+    <meta name="twitter:description" content="Recently I did a 3-day workshop about Deep Learning for Natural Language Processing. Clearly 3 days was not enough to cover all topics in this broad field, therefore I decided to create a series of practical tutorials about Neural Machine Translation in PyTorch. In this series I will start with" />
     <meta name="twitter:url" content="http://localhost:4000/" />
     <meta name="twitter:image" content="http://localhost:4000/assets/images/blog-cover.jpg" />
     <meta name="twitter:label1" content="Written by" />
     <meta name="twitter:data1" content="Daemon Engineer blog" />
     <meta name="twitter:label2" content="Filed under" />
-    <meta name="twitter:data2" content="Nmt," />
+    <meta name="twitter:data2" content="Nmt" />
     <meta name="twitter:site" content="@" />
     <meta name="twitter:creator" content="@" />
     <meta property="og:image:width" content="1400" />
@@ -76,7 +76,7 @@
         "@type": "WebPage",
         "@id": "http://localhost:4000/2018/07/08/nmt-with-pytorch-seq-to-seq.html"
     },
-    "description": "Recently I did a 3-day workshop about Deep Learning for Natural Language Processing. Clearly 3 days was not enough to cover all topics in this broad field, therefore I decided to create a series of practical tutorials about Neural Machine Translation in PyTorch. I will start with a simple neural"
+    "description": "Recently I did a 3-day workshop about Deep Learning for Natural Language Processing. Clearly 3 days was not enough to cover all topics in this broad field, therefore I decided to create a series of practical tutorials about Neural Machine Translation in PyTorch. In this series I will start with"
 }
     </script>
 
@@ -89,7 +89,7 @@
     </script> -->
 
     <meta name="generator" content="Jekyll 3.6.2" />
-    <link rel="alternate" type="application/rss+xml" title="Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder" href="/feed.xml" />
+    <link rel="alternate" type="application/rss+xml" title="Neural Machine Translation With PyTorch" href="/feed.xml" />
 
 
 </head>
@@ -151,11 +151,11 @@ into the {body} of the default.hbs template -->
                         <span class="date-divider">/</span>
                         
                             
-                               <a href='/tag/nmt,/'>NMT,</a>,
+                               <a href='/tag/nmt/'>NMT</a>,
                             
                         
                             
-                               <a href='/tag/dl,/'>DL,</a>,
+                               <a href='/tag/dl/'>DL</a>,
                             
                         
                             
@@ -164,20 +164,22 @@ into the {body} of the default.hbs template -->
                         
                     
                 </section>
-                <h1 class="post-full-title">Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder</h1>
+                <h1 class="post-full-title">Neural Machine Translation With PyTorch</h1>
+                
+                  <h2 class="post-full-title">Tutorial 1: Encoder-decoder</h2>
+                
             </header>
 
             
 
             <section class="post-full-content">
                 <div class="kg-card-markdown">
-                    <p><strong>Recently I did a <a href="https://github.com/tsdaemon/dl-nlp-2018">3-day workshop about Deep Learning for Natural Language Processing</a>.
+                    <p><em>Recently I did a <a href="https://github.com/tsdaemon/dl-nlp-2018">3-day workshop about Deep Learning for Natural Language Processing</a>.
 Clearly 3 days was not enough to cover all topics in this broad field, therefore
 I decided to create a series of practical tutorials about Neural Machine Translation
-in <a href="https://pytorch.org/">PyTorch</a>.</strong></p>
-
-<p><em>I will start with a simple neural translation model and gradually improve it using
-modern neural methods and techniques. In this first tutorial, I am going to create
+in <a href="https://pytorch.org/">PyTorch</a>. In this series I will start with a simple neural
+translation model and gradually improve it using
+modern neural methods and techniques. In the first tutorial I will create
 Ukrainian-German translator with an encoder-decoder model.</em></p>
 
 <h1 id="introduction">Introduction</h1>
@@ -198,15 +200,28 @@ can benefit from understanding of how modern NMT works.</p>
 <p>Even though I am mostly practitioner but I still prefer to have a solid
 mathematical representation of any model I am working with. This allows to maintain
 a correct abstract understanding of problem which my model is solving. Therefore I will
-start with formulation of NMT problem:</p>
+start with formulation of NMT problem. You can skip it, if you prefer to start coding already,
+but I advise you to review it to have a deep understanding of practical implementation.</p>
 
-<p>Given a sentence in source language $\textbf{x}$, the task is to infer a
+<blockquote>
+  <p>Given a sentence in source language $\textbf{x}$, the task is to infer a
   sentence in target language $\textbf{y}$ which maximizes conditional
   probability $p(\textbf{y}|\textbf{x})$:</p>
+</blockquote>
 
-<p>\begin{equation}
-  \textbf{y} = \underset{\hat{\textbf{y}}}{\mathrm{argmax}} p(\hat{\textbf{y}}|\textbf{x})
-  \end{equation}</p>
+<script type="math/tex; mode=display">\textbf{y} = \underset{\hat{\textbf{y}}}{\mathrm{argmax}} p(\hat{\textbf{y}}|\textbf{x})</script>
+
+<p>Clearly, this equation can not be used as is: there are an infinite number of all possible
+$\hat{\textbf{y}}$. But since sentence $\textbf{y}$ is a sequence of words $y_1, y_2, \ldots ,y_{t-1}, y_t$, we can decompose
+this probability as a product of probabilities for each word:</p>
+
+<script type="math/tex; mode=display">p(\textbf{y}|\textbf{x}) = \prod_{i=1}^{t} p(y_i| \textbf{x})</script>
+
+<p>Words probabilities in $\textbf{y}$ are not distributed independently; in the natural
+language phrases and sentences are usually follow strict or non-strict rules for word selection. Therefore,
+conditional probability for each word should also include other words from a target sentence:</p>
+
+<script type="math/tex; mode=display">p(\textbf{y}|\textbf{x}) = \prod_{i=1}^{t} p(y_i|y_{t}, y_{t-1}, \ldots, y_{i+1}, y_{i-1}, \ldots, y_{2}, y_{1}, \textbf{x})</script>
 
                 </div>
             </section>
@@ -293,13 +308,13 @@ start with formulation of NMT problem:</p>
         </a>
     </div>
     <span class="floating-header-divider">&mdash;</span>
-    <div class="floating-header-title">Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder</div>
+    <div class="floating-header-title">Neural Machine Translation With PyTorch</div>
     <div class="floating-header-share">
         <div class="floating-header-share-label">Share this <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <path d="M7.5 15.5V4a1.5 1.5 0 1 1 3 0v4.5h2a1 1 0 0 1 1 1h2a1 1 0 0 1 1 1H18a1.5 1.5 0 0 1 1.5 1.5v3.099c0 .929-.13 1.854-.385 2.748L17.5 23.5h-9c-1.5-2-5.417-8.673-5.417-8.673a1.2 1.2 0 0 1 1.76-1.605L7.5 15.5zm6-6v2m-3-3.5v3.5m6-1v2"/>
 </svg>
 </div>
-        <a class="floating-header-share-tw" href="https://twitter.com/share?text=Neural+Machine+Translation+With+PyTorch.+Tutorial+1%3A+Encoder-decoder&amp;url=https://tsdaemon.github.io2018/07/08/nmt-with-pytorch-seq-to-seq.html"
+        <a class="floating-header-share-tw" href="https://twitter.com/share?text=Neural+Machine+Translation+With+PyTorch&amp;url=https://tsdaemon.github.io2018/07/08/nmt-with-pytorch-seq-to-seq.html"
             onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
 
@@ -394,6 +409,13 @@ start with formulation of NMT problem:</p>
     </script>
     <script src="/assets/js/infinitescroll.js"></script> -->
     <!-- /endif -->
+
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+    });
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
 
     
 

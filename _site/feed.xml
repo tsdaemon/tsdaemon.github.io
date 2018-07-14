@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-07-14T21:22:51+03:00</updated><id>http://localhost:4000/</id><title type="html">Daemon Engineer blog</title><subtitle>Science and education enthusiast blog. Stories and tutorials about deep learning, reinforcement learning, natural language processing, data visualization and software development.</subtitle><entry><title type="html">Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder</title><link href="http://localhost:4000/2018/07/08/nmt-with-pytorch-seq-to-seq.html" rel="alternate" type="text/html" title="Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder" /><published>2018-07-08T15:37:21+03:00</published><updated>2018-07-08T15:37:21+03:00</updated><id>http://localhost:4000/2018/07/08/nmt-with-pytorch-seq-to-seq</id><content type="html" xml:base="http://localhost:4000/2018/07/08/nmt-with-pytorch-seq-to-seq.html">&lt;p&gt;&lt;strong&gt;Recently I did a &lt;a href=&quot;https://github.com/tsdaemon/dl-nlp-2018&quot;&gt;3-day workshop about Deep Learning for Natural Language Processing&lt;/a&gt;.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2018-07-14T22:11:34+03:00</updated><id>http://localhost:4000/</id><title type="html">Daemon Engineer blog</title><subtitle>Science and education enthusiast blog. Stories and tutorials about deep learning, reinforcement learning, natural language processing, data visualization and software development.</subtitle><entry><title type="html">Neural Machine Translation With PyTorch</title><link href="http://localhost:4000/2018/07/08/nmt-with-pytorch-seq-to-seq.html" rel="alternate" type="text/html" title="Neural Machine Translation With PyTorch" /><published>2018-07-08T15:37:21+03:00</published><updated>2018-07-08T15:37:21+03:00</updated><id>http://localhost:4000/2018/07/08/nmt-with-pytorch-seq-to-seq</id><content type="html" xml:base="http://localhost:4000/2018/07/08/nmt-with-pytorch-seq-to-seq.html">&lt;p&gt;&lt;em&gt;Recently I did a &lt;a href=&quot;https://github.com/tsdaemon/dl-nlp-2018&quot;&gt;3-day workshop about Deep Learning for Natural Language Processing&lt;/a&gt;.
 Clearly 3 days was not enough to cover all topics in this broad field, therefore
 I decided to create a series of practical tutorials about Neural Machine Translation
-in &lt;a href=&quot;https://pytorch.org/&quot;&gt;PyTorch&lt;/a&gt;.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;I will start with a simple neural translation model and gradually improve it using
-modern neural methods and techniques. In this first tutorial, I am going to create
+in &lt;a href=&quot;https://pytorch.org/&quot;&gt;PyTorch&lt;/a&gt;. In this series I will start with a simple neural
+translation model and gradually improve it using
+modern neural methods and techniques. In the first tutorial I will create
 Ukrainian-German translator with an encoder-decoder model.&lt;/em&gt;&lt;/p&gt;
 
 &lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;/h1&gt;
@@ -25,12 +24,25 @@ can benefit from understanding of how modern NMT works.&lt;/p&gt;
 &lt;p&gt;Even though I am mostly practitioner but I still prefer to have a solid
 mathematical representation of any model I am working with. This allows to maintain
 a correct abstract understanding of problem which my model is solving. Therefore I will
-start with formulation of NMT problem:&lt;/p&gt;
+start with formulation of NMT problem. You can skip it, if you prefer to start coding already,
+but I advise you to review it to have a deep understanding of practical implementation.&lt;/p&gt;
 
-&lt;p&gt;Given a sentence in source language $\textbf{x}$, the task is to infer a
+&lt;blockquote&gt;
+  &lt;p&gt;Given a sentence in source language $\textbf{x}$, the task is to infer a
   sentence in target language $\textbf{y}$ which maximizes conditional
   probability $p(\textbf{y}|\textbf{x})$:&lt;/p&gt;
+&lt;/blockquote&gt;
 
-&lt;p&gt;\begin{equation}
-  \textbf{y} = \underset{\hat{\textbf{y}}}{\mathrm{argmax}} p(\hat{\textbf{y}}|\textbf{x})
-  \end{equation}&lt;/p&gt;</content><author><name>Anatolii Stehnii</name></author><category term="nmt," /><category term="dl," /><category term="PyTorch" /><summary type="html">Recently I did a 3-day workshop about Deep Learning for Natural Language Processing. Clearly 3 days was not enough to cover all topics in this broad field, therefore I decided to create a series of practical tutorials about Neural Machine Translation in PyTorch.</summary></entry></feed>
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;\textbf{y} = \underset{\hat{\textbf{y}}}{\mathrm{argmax}} p(\hat{\textbf{y}}|\textbf{x})&lt;/script&gt;
+
+&lt;p&gt;Clearly, this equation can not be used as is: there are an infinite number of all possible
+$\hat{\textbf{y}}$. But since sentence $\textbf{y}$ is a sequence of words $y_1, y_2, \ldots ,y_{t-1}, y_t$, we can decompose
+this probability as a product of probabilities for each word:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;p(\textbf{y}|\textbf{x}) = \prod_{i=1}^{t} p(y_i| \textbf{x})&lt;/script&gt;
+
+&lt;p&gt;Words probabilities in $\textbf{y}$ are not distributed independently; in the natural
+language phrases and sentences are usually follow strict or non-strict rules for word selection. Therefore,
+conditional probability for each word should also include other words from a target sentence:&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;p(\textbf{y}|\textbf{x}) = \prod_{i=1}^{t} p(y_i|y_{t}, y_{t-1}, \ldots, y_{i+1}, y_{i-1}, \ldots, y_{2}, y_{1}, \textbf{x})&lt;/script&gt;</content><author><name>Anatolii Stehnii</name></author><category term="nmt" /><category term="dl" /><category term="PyTorch" /><summary type="html">Recently I did a 3-day workshop about Deep Learning for Natural Language Processing. Clearly 3 days was not enough to cover all topics in this broad field, therefore I decided to create a series of practical tutorials about Neural Machine Translation in PyTorch. In this series I will start with a simple neural translation model and gradually improve it using modern neural methods and techniques. In the first tutorial I will create Ukrainian-German translator with an encoder-decoder model.</summary></entry></feed>

@@ -8,12 +8,15 @@
     
       
       <item>
-        <title>Neural Machine Translation With PyTorch. Tutorial 1: Encoder-decoder</title>
+        <title>Neural Machine Translation With PyTorch</title>
         
-          <description>&lt;p&gt;&lt;strong&gt;Recently I did a &lt;a href=&quot;https://github.com/tsdaemon/dl-nlp-2018&quot;&gt;3-day workshop about Deep Learning for Natural Language Processing&lt;/a&gt;.
+          <description>&lt;p&gt;&lt;em&gt;Recently I did a &lt;a href=&quot;https://github.com/tsdaemon/dl-nlp-2018&quot;&gt;3-day workshop about Deep Learning for Natural Language Processing&lt;/a&gt;.
 Clearly 3 days was not enough to cover all topics in this broad field, therefore
 I decided to create a series of practical tutorials about Neural Machine Translation
-in &lt;a href=&quot;https://pytorch.org/&quot;&gt;PyTorch&lt;/a&gt;.&lt;/strong&gt;&lt;/p&gt;
+in &lt;a href=&quot;https://pytorch.org/&quot;&gt;PyTorch&lt;/a&gt;. In this series I will start with a simple neural
+translation model and gradually improve it using
+modern neural methods and techniques. In the first tutorial I will create
+Ukrainian-German translator with an encoder-decoder model.&lt;/em&gt;&lt;/p&gt;
 
 </description>
         
