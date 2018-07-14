@@ -1,7 +1,11 @@
 ---
 layout: page
+current: about
 title: About
-permalink: /about/
+navigation: true
+logo: 'assets/images/ghost.png'
+class: page-template
+subclass: 'post page'
 ---
 
 My name is Anatolii. I am a science and education enthusiast. In this blog I

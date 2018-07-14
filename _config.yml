@@ -13,7 +13,7 @@ language: 'en-uk'
 disqus: False
 
 cover: assets/images/blog-cover.jpg
-logo: assets/images/blog-icon.png
+# logo: assets/images/blog-icon.png
 logo_dark: assets/images/favicon.png
 favicon: assets/images/favicon.png
 

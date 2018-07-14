@@ -1,0 +1,12 @@
+nmt:
+  name: Neural Machine Translation
+  description: false
+  cover: false
+dl:
+  name: Deep Learning
+  description: false
+  cover: false
+pytorch:
+  name: PyTorch
+  description: false
+  cover: false
