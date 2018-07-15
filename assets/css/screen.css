@@ -1913,3 +1913,9 @@ Usage (In Ghost editor):
         margin-left: 0;
     }
 }
+
+img + em {
+  display:  block;
+  margin:  0 auto;
+  text-align:  center;
+}

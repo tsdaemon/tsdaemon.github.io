@@ -162,6 +162,8 @@ GEM
       jekyll-seo-tag (~> 2.0)
     jekyll-titles-from-headings (0.4.0)
       jekyll (~> 3.3)
+    jekyll-toc (0.6.0)
+      nokogiri (~> 1.7)
     jekyll-watch (1.5.1)
       listen (~> 3.0)
     jemoji (0.8.1)
@@ -218,6 +220,7 @@ DEPENDENCIES
   github-pages (~> 168)
   jekyll (~> 3.6.2)
   jekyll-paginate (~> 1.1.0)
+  jekyll-toc
   rake (~> 12.3.0)
 
 BUNDLED WITH

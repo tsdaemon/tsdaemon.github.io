@@ -1,8 +1,8 @@
 title: Daemon Engineer blog
 email: tsdaemon@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  Science and education enthusiast blog. Stories and tutorials about deep learning,
-  reinforcement learning, natural language processing, data visualization and software development.
+  Blog of science and education enthusiast. Stories and tutorials about deep learning,
+   natural language processing, data visualization and software development.
 
 cover: /assets/images/blog-cover.jpg
 # logo: /assets/images/blog-icon.png
@@ -26,10 +26,13 @@ subscribers: True # you need to connect an external service for this to work,
 # if 'True' the submit button is disabled for now, but you can change that
 # by editing `_includes/subscribe-form.html`
 facebook: anatolii.stn # replace by your username
-plugins: [jekyll-paginate, jekyll-feed]
+plugins: [jekyll-paginate, jekyll-feed, jekyll-toc]
 
 feed:
   path: feed.xml
+
+kramdown:
+  parse_block_html: true
 
 exclude:
   - assets/css
