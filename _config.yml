@@ -5,7 +5,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   reinforcement learning, natural language processing, data visualization and software development.
 
 cover: /assets/images/blog-cover.jpg
-# logo: assets/images/blog-icon.png
+# logo: /assets/images/blog-icon.png
 logo_dark: /assets/images/favicon.png
 favicon: /assets/images/favicon.png
 
