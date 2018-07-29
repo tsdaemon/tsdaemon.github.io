@@ -3,7 +3,6 @@ layout: post
 title:  "Neural Machine Translation With PyTorch"
 subtitle: "Tutorial 1: Encoder-decoder"
 date:   2018-07-08 15:37:21 +0300
-tags: nmt dl pytorch
 class: post-template
 subclass: 'post'
 comments: true
@@ -176,7 +175,7 @@ Also, replace input file with your
 
 Since there are a lot of example sentences and we want to train something quickly, we'll trim the data set to only relatively short and simple sentences. Here the maximum length is 8 words (that includes punctuation) and we're filtering to sentences that translate to the form "I am" or "He is" etc.
 
-Additionaly, you might want to filter out rare words which occur only few times in corpus. This words could not be learned efficiently since there are not enough training examples for them. This will reduce vocabulary size and decrease training time.
+Additionally, you might want to filter out rare words which occur only few times in corpus. This words could not be learned efficiently since there are not enough training examples for them. This will reduce vocabulary size and decrease training time.
 
 
 ```python
@@ -243,12 +242,12 @@ print('Training corpus length: {}\nSource vocabulary size: {}\nTarget vocabulary
     Target vocabulary size: 3201
 
 
-Data for deep learning experiment is usually split on tree parts:
+Data for deep learning experiment is usually split into three parts:
 * Training data is used for neural network training;
-* Development data is used to select optiomal training stop point;
+* Development data is used to select an optimal training stop point;
 * Test data is used for final evaluation of experiment performance.
 
-We will use 80% of data as a training set, 6% of data as a development set and 14% of data as a test set.
+We will use 80% of the data as a training set, 6% of the data as a development set and 14% of the data as a test set.
 
 
 ```python
@@ -273,8 +272,8 @@ dev_target = [target_sents[i] for i in dev_indices]
 test_target = [target_sents[i] for i in test_indices]
 ```
 
-PyTorch uses it's own format of data – Tensor. A Tensor is a multi-dimensional array of numbers with some type e.g. FloatTensor or LongTensor. Before we can use our training data, we need to convert it into tensors using previously defined word indices.
-Additionaly, we need to add special tokens SOS (start of sentence) and EOS (end of sentence) to each sentence.
+PyTorch uses its own format of data – Tensor. A Tensor is a multi-dimensional array of numbers with some type e.g. FloatTensor or LongTensor. Before we can use our training data, we need to convert it into tensors using previously defined word indices.
+Additionally, we need to add special tokens SOS (start of a sentence) and EOS (end of a sentence) to each sentence.
 Also, all sentences should have the same length to make possible batch training, therefore we will extend them with token PAD if needed.
 
 
@@ -330,13 +329,13 @@ torch.save(x_test, os.path.join(data_dir, 'x_test.bin'))
 
 ## Encoder
 
-The encoder of a Seq2seq network is a [**Recurrent Neural Network**](https://en.wikipedia.org/wiki/Recurrent_neural_network). Recurrent network can process model a sequence of related data (sentence in our case) using the same set of weights. To do this, RNN uses it's output from a previous step as input along with input from the sequence.
+The encoder of a Seq2seq network is a [**Recurrent Neural Network**](https://en.wikipedia.org/wiki/Recurrent_neural_network). A recurrent network can process model a sequence of related data (sentence in our case) using the same set of weights. To do this, RNN uses its output from a previous step as input along with input from the sequence.
 
-Naive implementation of RNN is subject to problems with a graient for long sequences; therefore, I use [**Long-Short Term Memory**](https://en.wikipedia.org/wiki/Long_short-term_memory) as recurrent module. You should not care about it's implementation since it already implemented in PyTorch: [nn.LSTM](https://pytorch.org/docs/stable/_modules/torch/nn/modules/rnn.html#LSTM). This module allows bi-directional sequence processing out-of-the-box – this allows to capture backward relations in sentence as well as forward relations.
+A naive implementation of RNN is subject to problems with a gradient for long sequences; therefore, I use [**Long-Short Term Memory**](https://en.wikipedia.org/wiki/Long_short-term_memory) as a recurrent module. You should not care about its implementation since it already implemented in PyTorch: [nn.LSTM](https://pytorch.org/docs/stable/_modules/torch/nn/modules/rnn.html#LSTM). This module allows bi-directional sequence processing out-of-the-box – this allows to capture backward relations in a sentence as well as forward relations.
 
-Additionally, I use embeddings module to convert word indices into dense vectors. This allow to project discreete symbols (words) into continuous space which reflects semantical relations in spatial words positions. For this experiment I will not use pretrained word vectors and train this representations using machine translation supervision signal. But you may use pretrained word embeddings (for Ukrainian [lang-uk](http://lang.org.ua/en/models/#anchor4) project).
+Additionally, I use embeddings module to convert word indices into dense vectors. This allows projecting discrete symbols (words) into continuous space which reflects semantical relations in spatial words positions. For this experiment, I will not use pre-trained word vectors and train this representation using machine translation supervision signal. But you may use the pre-trained word embeddings (for Ukrainian [lang-uk](http://lang.org.ua/en/models/#anchor4) project).
 
-To not forget meaning of dimensions for input vectors, usually I leave comments like `# word_inputs: (batch_size, seq_length)`. Above means that variable `word_inputs` contains reference to tensor, which has shape `(batch_size, seq_length)`, e.g. it is an array of sequences of length `seq_length`, where array length is `batch_size`.
+To not forget the meaning of dimensions for input vectors, I leave comments like `# word_inputs: (batch_size, seq_length)`. Above means that variable `word_inputs` contains a reference to tensor, which has shape `(batch_size, seq_length)`, e.g. it is an array of sequences of length `seq_length`, where array length is `batch_size`.
 
 
 ```python
@@ -382,8 +381,7 @@ class EncoderRNN(nn.Module):
 
 ## Decoder
 
-Decoder module is similar to encoder with difference in that it generates a sequence, therefore it will process inputs one by one; therefore it can not be bidirectional.
-
+Decoder module is similar to encoder with the difference in that it generates a sequence, therefore it will process inputs one by one; therefore it cannot be bidirectional.
 
 ```python
 class DecoderRNN(nn.Module):
@@ -409,7 +407,7 @@ class DecoderRNN(nn.Module):
 
 ## Test
 
-To make sure the Encoder and Decoder model are working (and working together) we'll do a quick test with fake word inputs:
+To make sure the Encoder and Decoder models are working (and working together) we'll do a quick test with fake word inputs:
 
 
 ```python
@@ -444,12 +442,12 @@ print(encoder_outputs.shape, encoder_hidden[0].shape, encoder_hidden[1].shape)
     torch.Size([1, 3, 10]) torch.Size([4, 1, 5]) torch.Size([4, 1, 5])
 
 
-`encoder_hidden` is tuple for h and c components of LSTM hidden state. In PyTorch, tensors of LSTM hidden components have a following meaning of dimensions:
-* First dimension is n_layers*directions, meaning that if we have bidirectional network, then each layer will store two items in this direction;
-* Second dimension is batch dimension
+`encoder_hidden` is a tuple for h and c components of LSTM hidden state. In PyTorch, tensors of LSTM hidden components have a following meaning of dimensions:
+* First dimension is n_layers*directions, meaning that if we have a bidirectional network, then each layer will store two items in this direction;
+* Second dimension is a batch dimension
 * Third dimension is a hidden vector itself
 
-Decoder uses single directional LSTM, therefore we need to reshape encoders h and c before sending them into decoder: concat all bi-directional vectors into single-direction vectors. This means, that each two vectors along `n_layers*directions` I combine into single vector, increasing size of hidden vector dimension in two times and decreasing size of the first dimension to `n_layers`, which is two.
+The decoder uses single directional LSTM, therefore we need to reshape encoders h and c before sending them into decoder: concatenate all bi-directional vectors into single-direction vectors. This means, that every two vectors along `n_layers*directions` I combine into a single vector, increasing size of hidden vector dimension in two times and decreasing size of the first dimension to `n_layers`, which is two.
 
 
 ```python
@@ -483,9 +481,9 @@ for i in range(3):
 
 ## Seq2seq
 
-Logic to coordinate this two modules I have stored in a high-level module `Seq2seq`: it takes care about Encoder-Decoder coordination, transformation of decoder results into word probability distribution.
+The logic to coordinate this two modules I have stored in a high-level module `Seq2seq`: it takes care of Encoder-Decoder coordination, a transformation of decoder results into word probability distribution.
 
-Also, this module implements two `forward` functions: one for training time and second is for inference. The difference between these two functions is that during training I am using training `y` values (target sentence words) as decoder input; this is called [Teacher Forcing](https://machinelearningmastery.com/teacher-forcing-for-recurrent-neural-networks/). Obviously, during inference I don't have `y` values.
+Also, this module implements two `forward` functions: one for training time and second is for inference. The difference between these two functions is that during training I am using training `y` values (target sentence words) as decoder input; this is called [Teacher Forcing](https://machinelearningmastery.com/teacher-forcing-for-recurrent-neural-networks/). Obviously, during inference, I don't have `y` values.
 
 
 ```python
@@ -551,7 +549,7 @@ class Seq2seq(nn.Module):
 
 # Training
 
-To optimize neural network weights we need to have a model itself and optimizer. Model is already defined and optimizer is usually available in NN framework. I use [Adam](http://ruder.io/optimizing-gradient-descent/index.html#adam) from [torch.optim](https://pytorch.org/docs/stable/optim.html).
+To optimize neural network weights we need to have a model itself and optimizer. Model is already defined and the optimizer is usually available in the NN framework. I use [Adam](http://ruder.io/optimizing-gradient-descent/index.html#adam) from [torch.optim](https://pytorch.org/docs/stable/optim.html).
 
 
 ```python
@@ -561,7 +559,7 @@ model = Seq2seq(len(source_vocab), len(target_vocab), 300, 1)
 optim = Adam(model.parameters(), lr=0.001)
 ```
 
-Since neural network training is a computationally expensive process, it is better to a train neural network for multiple examples at once. Therefore we need to split our training data on minibatches.
+Since neural network training is a computationally expensive process, it is better to a train neural network for multiple examples at once. Therefore we need to split our training data on mini-batches.
 
 
 ```python
@@ -585,11 +583,11 @@ Previously I mentioned log-lieklyhood function which is used to optimize model p
 cross_entropy = nn.CrossEntropyLoss()
 ```
 
-Finally, we can start to train our model. Each training epoch include forward propagation, which yields some training results for training target sentences; then `cross_entropy` loss is calculated and `loss.backward()` calculates gradient with respect to loss for each model parameter. After that, `optim.step()` uses gradient to adjust model parameters and minimize loss.
+Finally, we can start to train our model. Each training epoch includes forward propagation, which yields some training results for training target sentences; then `cross_entropy` loss is calculated and `loss.backward()` calculates gradient with respect to the loss for each model parameter. After that, `optim.step()` uses the gradient to adjust model parameters and minimize loss.
 
-After each training epoch, development set is used to evaluate model perfomance with [BLEU](https://en.wikipedia.org/wiki/BLEU) score. I use `early_stop_counter` to stop training process, if BLEU is not improving for 10 epochs.
+After each training epoch, the development set is used to evaluate model performance with [BLEU](https://en.wikipedia.org/wiki/BLEU) score. I use `early_stop_counter` to stop the training process if BLEU is not improving for 10 epochs.
 
-Module `tqdm` is optional to use, it is a handy and simple way to create progress bar for a comparably long operation.
+Module `tqdm` is optional to use, it is a handy and simple way to create a progress bar for a long operations.
 
 
 ```python
