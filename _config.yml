@@ -1,38 +1,18 @@
 title: Daemon Engineer blog
 email: tsdaemon@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  Blog of science and education enthusiast. Stories and tutorials about deep learning,
+  Science and education enthusiasts blog. Stories and tutorials about deep learning,
    natural language processing, data visualization and software development.
 
-cover: /assets/images/blog-cover.jpg
-# logo: /assets/images/blog-icon.png
-logo_dark: /assets/images/favicon.png
-favicon: /assets/images/favicon.png
-
-production_url: https://tsdaemon.github.io
-source_url: https://github.com/tsdaemon/tsdaemon.github.io
+facebook_username: anatolii.stn # replace by your username
+github_username:  tsdaemon
 
 # Build settings
 markdown: kramdown
-highlighter: rouge
-paginate: 100 # it will paginate after this number
-language: 'en-uk'
 
-disqus: False
-
-# Social info
-navigation: True # show the navbar links
-subscribers: True # you need to connect an external service for this to work,
-# if 'True' the submit button is disabled for now, but you can change that
-# by editing `_includes/subscribe-form.html`
-facebook: anatolii.stn # replace by your username
-plugins: [jekyll-paginate, jekyll-feed, jekyll-toc]
-
-feed:
-  path: feed.xml
-
-kramdown:
-  parse_block_html: true
+plugins:
+  - jekyll-feed
+  - jekyll-jupyter-notebook
 
 exclude:
   - assets/css

@@ -7,4 +7,5 @@ gem "rake", "~> 12.3.0"
 group :jekyll_plugins do
   gem "jekyll-paginate", "~> 1.1.0"
   gem "jekyll-toc"
+  gem "jekyll-jupyter-notebook"
 end
