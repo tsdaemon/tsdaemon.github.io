@@ -535,17 +535,20 @@ for epoch in range(10000):
     for x, reference in tqdm(zip(x_development, dev_target),
                              desc='Validating epoch {}'.format(epoch+1),
                              total=dev_length):
-        y = model(x.unsqueeze(0))[1:]
-        hypothesis = target_vocab.unidex_words(y)
+        y = model(x.unsqueeze(0))
+        hypothesis = target_vocab.unidex_words(y[1:-1])  # Remove SOS and EOS
         bleu += sentence_bleu([reference], hypothesis)
+
     bleu /= dev_length
-    print ('Epoch {} validation finished, BLEU: {}\nTranslation example: ref "{}", hypothesis "{}"'.format(
-        epoch+1, bleu, ' '.join(reference), ' '.join(hypothesis)
+    source = ' '.join(source_vocab.unidex_words(x.tolist()[0]))
+    print ('Epoch {} validation finished, BLEU: {}\nTranslation example: source "{}", ref "{}", hypothesis "{}"'.format(
+        epoch+1, bleu, source, ' '.join(reference), ' '.join(hypothesis)
     ))
 
     if bleu > best_bleu:
         early_stop_counter = 0
         print('The best model found, resetting eraly stop counter.')
+        best_bleu = bleu
     else:
         early_stop_counter += 1
         print('No improvement, early stop counter: {}.'.fromat(early_stop_counter))
