@@ -502,7 +502,7 @@ from tqdm import tqdm_notebook as tqdm
 from nltk.translate.bleu_score import sentence_bleu
 
 BATCH_SIZE = 100
-total_batches = int(x_length/BATCH_SIZE)
+total_batches = int(len(x_training)/BATCH_SIZE)
 early_stop_after = 10
 early_stop_counter = 0
 
@@ -510,7 +510,7 @@ best_bleu = 0.0
 
 for epoch in range(10000):
     total_loss = 0
-    for batch in tqdm(batch_generator(list(range(x_length)), BATCH_SIZE),
+    for batch in tqdm(batch_generator(list(range(len(x_training))), BATCH_SIZE),
                       desc='Training epoch {}'.format(epoch+1),
                       total=total_batches):
         x = x_training[batch, :]
