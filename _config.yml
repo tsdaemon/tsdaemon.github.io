@@ -9,25 +9,7 @@ github_username:  tsdaemon
 
 # Build settings
 markdown: kramdown
-
+theme: minima
 plugins:
   - jekyll-feed
   - jekyll-jupyter-notebook
-
-exclude:
-  - assets/css
-  - node_modules
-  - vendor
-  - .travis.yml
-  - Gemfile
-  - Gemfile.lock
-  - GHOST.txt
-  - gulpfile.js
-  - LICENSE
-  - package.json
-  - Rakefile
-  - README.md
-  - script.py
-  - changelog.md
-  - "*.Rmd"
-  - .git*
