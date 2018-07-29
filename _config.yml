@@ -17,3 +17,6 @@ disqus:
   shortname: anatoliis-blog
 
 google_analytics: UA-104247978-1
+
+exclude:
+  - notebooks/
