@@ -8,7 +8,7 @@ subclass: 'post'
 comments: true
 ---
 
-*Recently I did a [3-day workshop about Deep Learning for Natural Language Processing](https://github.com/tsdaemon/dl-nlp-2018).
+*Recently I did a [workshop about Deep Learning for Natural Language Processing](https://github.com/tsdaemon/dl-nlp-2018).
 Clearly, 3 days was not enough to cover all topics in this broad field, therefore
 I decided to create a series of practical tutorials about Neural Machine Translation
 in [PyTorch](https://pytorch.org/). In this series, I will start with a simple neural
