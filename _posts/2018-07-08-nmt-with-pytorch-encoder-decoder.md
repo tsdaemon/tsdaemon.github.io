@@ -97,7 +97,7 @@ The source sentence is encoded word for word by a [**Recurrent Neural Network**]
 
 ## Data preparation
 
-For this tutorial we will use bilingual datasets from [tatoeba.org](https://tatoeba.org/eng/downloads).
+For this tutorial I used **bilingual datasets** from [tatoeba.org](https://tatoeba.org/eng/downloads).
 You can download language pairs data from http://www.manythings.org/anki/, or if there is no pair,
 as for Ukrainian-German, you can use my script [get_dataset.py](https://github.com/tsdaemon/neural-experiments/blob/master/nmt/scripts/get_dataset.py). It will download raw data from
 tatoeba and extract a bilingual dataset as a `csv` file.
@@ -109,12 +109,13 @@ import os
 
 source_lang = 'ukr'
 target_lang = 'deu'
-data_dir = '../../neural-experiments/nmt/data/'
+data_dir = 'data/'
 
+os.chdir('../')
 corpus = pd.read_csv(os.path.join(data_dir, '{}-{}.csv'.format(source_lang, target_lang)), delimiter='\t')
 ```
 
-To train neural network we need to turn the sentences into something the neural network can understand, which of course means numbers. Each sentence will be split into words and turned into a sequence of numbers. To do this, we will use a vocabulary – a class which will store word indexes.  
+To train a neural network I need to turn the sentences into something the neural network can understand, which of course means **numbers**. Each sentence is split into words and turned into a sequence of numbers. To do this, I used a vocabulary – a class which will store word indexes.  
 
 
 ```python
@@ -168,14 +169,14 @@ class Vocab:
             vocab.index_words(words)
 ```
 
-Define tokenizer functions for you languages to split sentences on words.
-In this examples I'm using standard [`nltk.tokenize.WordPunctTokenizer`](https://kite.com/python/docs/nltk.tokenize.WordPunctTokenizer) for German and
+Define **tokenizer functions** for you languages to split sentences into words.
+In this examples I used a standard [`nltk.tokenize.WordPunctTokenizer`](https://kite.com/python/docs/nltk.tokenize.WordPunctTokenizer) for German and
 a function `tokenize_words` from package [`tokenize_uk`](https://github.com/lang-uk/tokenize-uk) for Ukrainian.
-Also, replace input file with your
+Also, replace the input file with yours.
 
-Since there are a lot of example sentences and we want to train something quickly, we'll trim the data set to only relatively short and simple sentences. Here the maximum length is 8 words (that includes punctuation) and we're filtering to sentences that translate to the form "I am" or "He is" etc.
+Since there are a lot of example sentences and I want to train something quickly, I **trimmed** the data set to only relatively short and simple sentences. Here the maximum length is 10 words (that includes punctuation)
 
-Additionally, you might want to filter out rare words which occur only few times in corpus. This words could not be learned efficiently since there are not enough training examples for them. This will reduce vocabulary size and decrease training time.
+Additionally, you might want to filter out **rare words** which occur only a few times in corpus. This words could not be learned efficiently since there are not enough training examples for them. This will reduce vocabulary size and decrease training time.
 
 
 ```python
@@ -183,8 +184,8 @@ import nltk
 from tokenize_uk import tokenize_words
 import pandas as pd
 
-max_length = 8
-min_word_count = 2
+max_length = 10
+min_word_count = 1
 
 tokenizers = {
     'ukr': tokenize_words,
@@ -222,32 +223,71 @@ def read_vocab(sents):
 source_sents = preprocess_corpus(corpus['text' + source_lang], tokenizers[source_lang], min_word_count)
 target_sents = preprocess_corpus(corpus['text' + target_lang], tokenizers[target_lang], min_word_count)
 
+# Using set to remove duplicates
 source_sents, target_sents = zip(
-    *[(s, t) for s, t in zip(source_sents, target_sents)
-      if len(s) < max_length and len(t) < max_length]
+    *sorted({(tuple(s), tuple(t)) for s, t in zip(source_sents, target_sents)
+              if len(s) <= max_length and len(t) <= max_length})
 )
 
 source_vocab = read_vocab(source_sents)
 target_vocab = read_vocab(target_sents)
+
 target_vocab.to_file(os.path.join(data_dir, '{}.vocab.txt'.format(target_lang)))
 source_vocab.to_file(os.path.join(data_dir, '{}.vocab.txt'.format(source_lang)))
 
-print('Training corpus length: {}\nSource vocabulary size: {}\nTarget vocabulary size: {}'.format(
+print('Corpus length: {}\nSource vocabulary size: {}\nTarget vocabulary size: {}'.format(
     len(source_sents), len(source_vocab.word2index), len(target_vocab.word2index)
 ))
+examples = list(zip(source_sents, target_sents))[80:90]
+for source, target in examples:
+    print('Source: "{}", target: "{}"'.format(' '.join(source), ' '.join(target)))
 ```
 
-    Training corpus length: 11582
-    Source vocabulary size: 4131
-    Target vocabulary size: 3201
+    Corpus length: 14044
+    Source vocabulary size: 8497
+    Target vocabulary size: 6138
+    Source: "апельсини ростуть в теплих країнах .", target: "apfelsinen wachsen in warmen ländern ."
+    Source: "араби мене переслідують .", target: "araber verfolgen mich ."
+    Source: "арбітр закінчить гру за дві хвилини .", target: "der schiedsrichter wird das spiel in zwei minuten beenden ."
+    Source: "астронавти полетіли на місяць в ракеті .", target: "die astronauten flogen mit einer rakete zum mond ."
+    Source: "африка є колискою людства .", target: "afrika ist die wiege der menschheit ."
+    Source: "африка — не країна .", target: "afrika ist kein land ."
+    Source: "афіни — столиця греції .", target: "athen ist die hauptstadt griechenlands ."
+    Source: "афіни — столиця греції .", target: "athen ist die hauptstadt von griechenland ."
+    Source: "бабусі подобається дивитися телевізор .", target: "oma schaut gerne fernsehen ."
+    Source: "багато американців цікавляться джазом .", target: "viele amerikaner interessieren sich für jazz ."
 
 
-Data for deep learning experiment is usually split into three parts:
-* Training data is used for neural network training;
-* Development data is used to select an optimal training stop point;
-* Test data is used for final evaluation of experiment performance.
+As you can see, some translation pairs can **duplicate** each other: one source sentence might have multiple target references. This naturally happens in language, we always have options for translation. And this should be considered when we train NMT system: that it is possible to have more than one option of a correct model output.
 
-We will use 80% of the data as a training set, 6% of the data as a development set and 14% of the data as a test set.
+Translation quality metrics like **BLEU** (it will be described in details later) are designed to use multiple references of a correct translation. To take this into account during evaluation I combined pairs with an identical source into one pair with one source and multiple targets.
+
+
+```python
+source_to_target = {}
+for source, target in zip(source_sents, target_sents):
+    if source in source_to_target:
+        source_to_target[source].append(target)
+    else:
+        source_to_target[source] = [target]
+
+source_sents, target_sents = zip(*source_to_target.items())
+len(source_sents)
+```
+
+
+
+
+    11967
+
+
+
+Data for **deep learning experiment** is usually split into three parts:
+* *Training data* is used for neural network training;
+* *Development data* is used to select an optimal training stop point;
+* *Test data* is used for final evaluation of experiment performance.
+
+I used 80% of the data as a training set, 6% of the data as a development set and 14% of the data as a test set.
 
 
 ```python
@@ -259,9 +299,9 @@ np.random.seed(RANDOM_SEED)
 source_length = len(source_sents)
 inidices = np.random.permutation(source_length)
 
-training_indices = inidices[:int(x_length*0.8)]
-dev_indices = inidices[int(x_length*0.8):int(x_length*0.86)]
-test_indices = inidices[int(x_length*0.86):]
+training_indices = inidices[:int(source_length*0.8)]
+dev_indices = inidices[int(source_length*0.8):int(source_length*0.86)]
+test_indices = inidices[int(source_length*0.86):]
 
 training_source = [source_sents[i] for i in training_indices]
 dev_source = [source_sents[i] for i in dev_indices]
@@ -270,11 +310,24 @@ test_source = [source_sents[i] for i in test_indices]
 training_target = [target_sents[i] for i in training_indices]
 dev_target = [target_sents[i] for i in dev_indices]
 test_target = [target_sents[i] for i in test_indices]
+
+# Unwrap training examples
+training_t = []
+training_s = []
+for source, tt in zip(training_source, training_target):
+    for target in tt:
+        training_t.append(target)
+        training_s.append(source)
+
+training_source = training_s
+training_target = training_t
 ```
 
-PyTorch uses its own format of data – Tensor. A Tensor is a multi-dimensional array of numbers with some type e.g. FloatTensor or LongTensor. Before we can use our training data, we need to convert it into tensors using previously defined word indices.
-Additionally, we need to add special tokens SOS (start of a sentence) and EOS (end of a sentence) to each sentence.
-Also, all sentences should have the same length to make possible batch training, therefore we will extend them with token PAD if needed.
+PyTorch uses its own format of data – **Tensor**. A Tensor is a multi-dimensional array of numbers with some type e.g. FloatTensor or LongTensor.
+
+Before I can use the training data, I need to convert it into tensors using previously defined **word indices**. Also, I need to have source sentences as tensors for model validation with development and test sample.
+
+Each sentence in the tensor form should have **special tokens** SOS (start of a sentence) and EOS (end of a sentence) for a model being able to identify sequence start and finish. Also, all sentences should have the same length to make possible the batch training, therefore I extended them with token PAD if needed.
 
 
 ```python
@@ -325,24 +378,29 @@ for source_sent in test_source:
 
 x_test = torch.transpose(torch.cat(x_test, dim=-1), 1, 0)
 torch.save(x_test, os.path.join(data_dir, 'x_test.bin'))
+
+USE_CUDA = False
+if USE_CUDA:
+    x_training = x_training.cuda()
+    y_training = y_training.cuda()
+    x_development = x_development.cuda()
+    x_test = x_test.cuda()
 ```
 
 ## Encoder
 
-The encoder of a Seq2seq network is a [**Recurrent Neural Network**](https://en.wikipedia.org/wiki/Recurrent_neural_network). A recurrent network can process model a sequence of related data (sentence in our case) using the same set of weights. To do this, RNN uses its output from a previous step as input along with input from the sequence.
+The encoder of a Seq2seq network is a [**Recurrent Neural Network**](https://en.wikipedia.org/wiki/Recurrent_neural_network). A **recurrent network** can process model a sequence of related data (sentence in our case) using the same set of weights. To do this, RNN uses its output from a previous step as input along with input from the sequence.
 
-A naive implementation of RNN is subject to problems with a gradient for long sequences; therefore, I use [**Long-Short Term Memory**](https://en.wikipedia.org/wiki/Long_short-term_memory) as a recurrent module. You should not care about its implementation since it already implemented in PyTorch: [nn.LSTM](https://pytorch.org/docs/stable/_modules/torch/nn/modules/rnn.html#LSTM). This module allows bi-directional sequence processing out-of-the-box – this allows to capture backward relations in a sentence as well as forward relations.
+A naive implementation of RNN is subject to **problems with a gradient for long sequences** (see more on [WildML](http://www.wildml.com/2015/10/recurrent-neural-networks-tutorial-part-3-backpropagation-through-time-and-vanishing-gradients/); therefore, I used [**Long-Short Term Memory**](https://en.wikipedia.org/wiki/Long_short-term_memory) as a recurrent module. You should not care about its implementation since it already implemented in PyTorch: [nn.LSTM](https://pytorch.org/docs/stable/_modules/torch/nn/modules/rnn.html#LSTM). This module allows bi-directional sequence processing out-of-the-box – this allows to capture backward relations in a sentence as well as forward relations.
 
-Additionally, I use embeddings module to convert word indices into dense vectors. This allows projecting discrete symbols (words) into continuous space which reflects semantical relations in spatial words positions. For this experiment, I will not use pre-trained word vectors and train this representation using machine translation supervision signal. But you may use the pre-trained word embeddings (for Ukrainian [lang-uk](http://lang.org.ua/en/models/#anchor4) project).
+Additionally, I used **embeddings** module to convert word indices into dense vectors. This allows projecting discrete symbols (words) into continuous space which reflects semantical relations in spatial words positions. For this experiment, I did not use pre-trained word vectors and train this representation using machine translation supervision signal. But you may use the pre-trained word embeddings (for Ukrainian [lang-uk](http://lang.org.ua/en/models/#anchor4) project).
 
-To not forget the meaning of dimensions for input vectors, I leave comments like `# word_inputs: (batch_size, seq_length)`. Above means that variable `word_inputs` contains a reference to tensor, which has shape `(batch_size, seq_length)`, e.g. it is an array of sequences of length `seq_length`, where array length is `batch_size`.
+To not forget the meaning of dimensions for input vectors, I left comments like `# word_inputs: (batch_size, seq_length)`. Above means that variable `word_inputs` contains a reference to tensor, which has shape `(batch_size, seq_length)`, e.g. it is an array of sequences of length `seq_length`, where array length is `batch_size`.
 
 
 ```python
 import torch.nn as nn
 import torch.nn.init as init
-
-USE_CUDA = False
 
 class EncoderRNN(nn.Module):
     def __init__(self, vocab_size, hidden_size, n_layers=1):
@@ -381,7 +439,8 @@ class EncoderRNN(nn.Module):
 
 ## Decoder
 
-Decoder module is similar to encoder with the difference in that it generates a sequence, therefore it will process inputs one by one; therefore it cannot be bidirectional.
+Decoder module is similar to encoder with the difference in that it **generates** a sequence, so it will process inputs one by one; therefore it cannot be bidirectional.
+
 
 ```python
 class DecoderRNN(nn.Module):
@@ -407,7 +466,7 @@ class DecoderRNN(nn.Module):
 
 ## Test
 
-To make sure the Encoder and Decoder models are working (and working together) we'll do a quick test with fake word inputs:
+To make sure the Encoder and Decoder models are working (and working together) I did a quick test with fake word inputs:
 
 
 ```python
@@ -442,12 +501,12 @@ print(encoder_outputs.shape, encoder_hidden[0].shape, encoder_hidden[1].shape)
     torch.Size([1, 3, 10]) torch.Size([4, 1, 5]) torch.Size([4, 1, 5])
 
 
-`encoder_hidden` is a tuple for h and c components of LSTM hidden state. In PyTorch, tensors of LSTM hidden components have a following meaning of dimensions:
-* First dimension is n_layers*directions, meaning that if we have a bidirectional network, then each layer will store two items in this direction;
-* Second dimension is a batch dimension
-* Third dimension is a hidden vector itself
+`encoder_hidden` is a tuple for h and c components of LSTM hidden state. In PyTorch, tensors of LSTM hidden components have the following meaning of **dimensions**:
+* First dimension is n_layers*directions, meaning that if we have a bidirectional network, then each layer will store two items in this direction.
+* Second dimension is a batch dimension.
+* Third dimension is a hidden vector itself.
 
-The decoder uses single directional LSTM, therefore we need to reshape encoders h and c before sending them into decoder: concatenate all bi-directional vectors into single-direction vectors. This means, that every two vectors along `n_layers*directions` I combine into a single vector, increasing size of hidden vector dimension in two times and decreasing size of the first dimension to `n_layers`, which is two.
+The decoder uses **a single directional LSTM**, therefore we need to reshape encoders h and c before sending them into decoder: concatenate all bi-directional vectors into single-direction vectors. This means, that every two vectors along `n_layers*directions` I combined into a single vector, increasing the size of hidden vector dimension in two times and decreasing size of the first dimension to `n_layers`, which is two.
 
 
 ```python
@@ -481,9 +540,9 @@ for i in range(3):
 
 ## Seq2seq
 
-The logic to coordinate this two modules I have stored in a high-level module `Seq2seq`: it takes care of Encoder-Decoder coordination, a transformation of decoder results into word probability distribution.
+The logic to coordinate this two modules I stored in a high-level module `Seq2seq`; it takes care of Encoder-Decoder coordination and a transformation of decoder results into a word probability distribution.
 
-Also, this module implements two `forward` functions: one for training time and second is for inference. The difference between these two functions is that during training I am using training `y` values (target sentence words) as decoder input; this is called [Teacher Forcing](https://machinelearningmastery.com/teacher-forcing-for-recurrent-neural-networks/). Obviously, during inference, I don't have `y` values.
+Also, this module implements two `forward` functions: **one is for training time and second is for inference**. The difference between these two functions is that during training I am using training `y` values (target sentence words) as decoder input; this is called [Teacher Forcing](https://machinelearningmastery.com/teacher-forcing-for-recurrent-neural-networks/). Obviously, during inference, I don't have `y` values, so I need a separate method for it.
 
 
 ```python
@@ -498,6 +557,8 @@ class Seq2seq(nn.Module):
         self.decoder = DecoderRNN(output_vocab_size, hidden_size, self.n_layers)
 
         self.W = nn.Linear(hidden_size, output_vocab_size)
+        init.normal_(self.W.weight, 0.0, 0.2)
+
         self.softmax = nn.Softmax()
 
     def _forward_encoder(self, x):
@@ -506,9 +567,9 @@ class Seq2seq(nn.Module):
         encoder_outputs, encoder_hidden = self.encoder(x, init_hidden)
         encoder_hidden_h, encoder_hidden_c = encoder_hidden
 
-        decoder_hidden_h = encoder_hidden_h.reshape(self.n_layers, batch_size, self.hidden_size)
-        decoder_hidden_c = encoder_hidden_c.reshape(self.n_layers, batch_size, self.hidden_size)
-        return decoder_hidden_h, decoder_hidden_c
+        self.decoder_hidden_h = encoder_hidden_h.reshape(self.n_layers, batch_size, self.hidden_size)
+        self.decoder_hidden_c = encoder_hidden_c.reshape(self.n_layers, batch_size, self.hidden_size)
+        return self.decoder_hidden_h, self.decoder_hidden_c
 
     def forward_train(self, x, y):
         decoder_hidden_h, decoder_hidden_c = self._forward_encoder(x)
@@ -549,17 +610,17 @@ class Seq2seq(nn.Module):
 
 # Training
 
-To optimize neural network weights we need to have a model itself and optimizer. Model is already defined and the optimizer is usually available in the NN framework. I use [Adam](http://ruder.io/optimizing-gradient-descent/index.html#adam) from [torch.optim](https://pytorch.org/docs/stable/optim.html).
+To optimize neural network weights I need to have a model itself and **optimizer**. Model is already defined and the optimizer is usually available in the NN framework. I used [Adam](http://ruder.io/optimizing-gradient-descent/index.html#adam) from [torch.optim](https://pytorch.org/docs/stable/optim.html).
 
 
 ```python
 from torch.optim import Adam
 
 model = Seq2seq(len(source_vocab), len(target_vocab), 300, 1)
-optim = Adam(model.parameters(), lr=0.001)
+optim = Adam(model.parameters(), lr=0.0001)
 ```
 
-Since neural network training is a computationally expensive process, it is better to a train neural network for multiple examples at once. Therefore we need to split our training data on mini-batches.
+Since neural network training is a computationally expensive process, it is better to a train neural network for multiple examples at once. Therefore I need to split our training data on **mini-batches**.
 
 
 ```python
@@ -576,36 +637,81 @@ def batch_generator(batch_indices, batch_size):
             yield batch_indices[batch_start:batch_end]
 ```
 
-Previously I mentioned log-lieklyhood function which is used to optimize model parameters; in PyTorch this function is implemented in module `CrossEntropyLoss`:
+Previously I mentioned **a log-likelyhood function** which is used to optimize model parameters; in PyTorch this function is implemented in module `CrossEntropyLoss`:
 
 
 ```python
 cross_entropy = nn.CrossEntropyLoss()
 ```
 
-Finally, we can start to train our model. Each training epoch includes forward propagation, which yields some training results for training target sentences; then `cross_entropy` loss is calculated and `loss.backward()` calculates gradient with respect to the loss for each model parameter. After that, `optim.step()` uses the gradient to adjust model parameters and minimize loss.
+To evaluate the performance of our network I should use a translation quality metric. Standard selection for neural machine translation would be [BLEU](https://en.wikipedia.org/wiki/BLEU) - **bilingual evaluation understudy**. This metric is proven to have the most correlation with a human judgment of translation quality.
 
-After each training epoch, the development set is used to evaluate model performance with [BLEU](https://en.wikipedia.org/wiki/BLEU) score. I use `early_stop_counter` to stop the training process if BLEU is not improving for 10 epochs.
+What is important to understand that BLEU is looking **how many common phrases ([n-grams](https://en.wikipedia.org/wiki/N-gram)) are shared** between model translation and multiple correct translation references. This could be unigrams (phrases of one word) in BLEU-1, bigrams (two words) in BLEU-2 and so on. Since my dataset is relatively small for a neural model, I will use less restrictive BLEU-1 as the main metric.
 
-Module `tqdm` is optional to use, it is a handy and simple way to create a progress bar for a long operations.
+
+```python
+from nltk.translate.bleu_score import corpus_bleu
+
+def bleu(n):
+    weights = [1.0/n]*n + [0.0]*(4-n)
+    return lambda list_of_references, list_of_hypothesis: corpus_bleu(list_of_references, list_of_hypothesis, weights)
+
+def accuracy(list_of_references, list_of_hypothesis):
+    total = 0.0
+    for references, hypothesis in zip(list_of_references, list_of_hypothesis):
+        total += 1.0 if tuple(hypothesis) in set(references) else 0.0
+    return total / len(list_of_references)
+
+score_functions = {'BLEU-{}'.format(i):bleu(i) for i in range(1, 5)}
+score_functions['Accuracy'] = accuracy
+
+def score(model, X, target, desc='Scoring...'):
+    scores = {name:0.0 for name in score_functions.keys()}
+    length = len(target)
+    list_of_hypothesis = []
+    for i, x in tqdm(enumerate(X),
+                     desc=desc,
+                     total=length):
+        y = model(x.unsqueeze(0))
+        hypothesis = target_vocab.unidex_words(y[1:-1])  # Remove SOS and EOS from y
+        list_of_hypothesis.append(hypothesis)
+
+    for name, func in score_functions.items():
+        score = func(target, list_of_hypothesis)
+        scores[name] = score
+
+    return scores
+```
+
+Finally, we can start to **train** our model. Each training epoch includes *a forward propagation*, which yields some training hypothesis for training target sentences; then `cross_entropy` calculates loss for this hypothesis and `loss.backward()` calculates *gradient* with respect to the loss for each model parameter. After that, `optim.step()` uses the gradient to **adjust model parameters and minimize loss**.
+
+After each training epoch, the development set is used **to evaluate model performance**. I used `early_stop_counter` to stop the training process if BLEU-1 is not getting better for 10 epochs.
+
+Module `tqdm` is optional to use, it is a **handy and simple** way to create a progress bar for long operations.
 
 
 ```python
 from tqdm import tqdm_notebook as tqdm
-from nltk.translate.bleu_score import sentence_bleu
 
 BATCH_SIZE = 100
-total_batches = int(len(x_training)/BATCH_SIZE)
+total_batches = int(len(x_training)/BATCH_SIZE) + 1
+indices = list(range(len(x_training)))
+
 early_stop_after = 10
 early_stop_counter = 0
+best_model = None
 
-best_bleu = 0.0
+best_score = 0.0
+scoring_metric = 'BLEU-1'
+scores_history = []
+loss_history = []
 
 for epoch in range(10000):
-    total_loss = 0
-    for batch in tqdm(batch_generator(list(range(len(x_training))), BATCH_SIZE),
-                      desc='Training epoch {}'.format(epoch+1),
-                      total=total_batches):
+    # Training
+    total_loss = 0.0
+    for step, batch in tqdm(enumerate(batch_generator(indices, BATCH_SIZE)),
+                            desc='Training epoch {}'.format(epoch+1),
+                            total=total_batches):
         x = x_training[batch, :]
         # y for teacher forcing is all sequence without a last element
         y_tf = y_training[batch, :-1]
@@ -614,6 +720,7 @@ for epoch in range(10000):
         # (batch_size, vocab_size, seq_length)
         H = model.forward_train(x, y_tf)
         loss = cross_entropy(H, y_true)
+
         assert loss.item() > 0
 
         optim.zero_grad()
@@ -621,31 +728,102 @@ for epoch in range(10000):
         optim.step()
 
         total_loss += loss.item()
-    print('Epoch {} training finished, loss: {}'.format(epoch+1, total_loss/total_batches))
 
-    bleu = 0.0
-    dev_length = len(dev_target)
-    for x, reference in tqdm(zip(x_development, dev_target),
-                             desc='Validating epoch {}'.format(epoch+1),
-                             total=dev_length):
-        y = model(x.unsqueeze(0))
-        hypothesis = target_vocab.unidex_words(y[1:-1])  # Remove SOS and EOS
-        bleu += sentence_bleu([reference], hypothesis)
+    loss_history.append(total_loss/total_batches)
+    print('Epoch {} training is finished, loss: {:.4f}'.format(epoch+1, total_loss/total_batches))
 
-    bleu /= dev_length
-    source = ' '.join(source_vocab.unidex_words(x.tolist()[0]))
-    print ('Epoch {} validation finished, BLEU: {}\nTranslation example: source "{}", ref "{}", hypothesis "{}"'.format(
-        epoch+1, bleu, source, ' '.join(reference), ' '.join(hypothesis)
+    desc = 'Validating epoch {}'.format(epoch+1)
+    scores = score(model, x_development, dev_target, desc=desc)
+    scores_str = '\n'.join(['{}: {:.4f}'.format(name, score) for name, score in scores.items()])
+    scores_history.append(scores)
+
+    print ('Epoch {} validation is finished.\n{}'.format(
+        epoch+1, scores_str
     ))
 
-    if bleu > best_bleu:
+    metric = scores[scoring_metric]
+
+    # Early Stop
+    if metric > best_score:
         early_stop_counter = 0
-        print('The best model found, resetting eraly stop counter.')
-        best_bleu = bleu
+        print('The best model is found, resetting early stop counter.')
+        best_score = metric
+        best_model = model
     else:
         early_stop_counter += 1
-        print('No improvement, early stop counter: {}.'.fromat(early_stop_counter))
+        print('No improvements for {} epochs.'.format(early_stop_counter))
         if early_stop_counter >= early_stop_after:
             print('Early stop!')
             break
+```
+
+```  
+Epoch 20 validation is finished.
+BLEU-1: 0.1949
+BLEU-2: 0.0464
+BLEU-3: 0.0094
+BLEU-4: 0.0000
+Accuracy: 0.0000
+No improvements for 10 epochs.
+Early stop!
+```
+
+
+I prepared some **plots** to get a visual understanding how a validation score changed during training.
+
+
+```python
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+nrows = 3
+ncols = 2
+
+fig, ax = plt.subplots(nrows, ncols, sharex=True, figsize=(18, 16), dpi= 80,)
+
+epochs = list(range(1, epoch+2))
+epochs_ticks = list(range(1, epoch+2, 2))
+
+i = 0
+j = 0
+
+ax[i][j].plot(epochs, loss_history, color='dodgerblue')
+ax[i][j].set_title('Loss history')
+ax[i][j].set_xlabel('Epochs')
+ax[i][j].set_xticks(epochs_ticks)
+ax[i][j].set_ylabel('Loss')
+
+for name in score_functions.keys():
+    j += 1
+    if j >= ncols:
+        j = 0
+        i += 1
+    score_history = [s[name] for s in scores_history]
+    ax[i][j].plot(epochs, score_history, color='darkorange')
+    ax[i][j].set_title('Score history: {}'.format(name))
+    ax[i][j].set_xlabel('Epochs')
+    ax[i][j].set_xticks(epochs_ticks)
+    ax[i][j].set_ylabel('Score')
+
+plt.show()
+```
+
+![Results](/assets/images/nmt/encoder-decoder_33_0.png)
+
+Finally, each experiment should be evaluated with **unseen data**. When I selected `best_model` according to the best validation score, I made the model slightly overfit on validation data; therefore, to get a fair quality assessment I scored `best_model` on the test set.
+
+
+```python
+test_scores = score(best_model, x_test, test_target)
+scores_str = '\n'.join(['{}: {:.4f}'.format(name, score) for name, score in test_scores.items()])
+print('Final score:\n' + scores_str)
+```
+
+```
+Final score:
+BLEU-1: 0.1919
+BLEU-2: 0.0487
+BLEU-3: 0.0125
+BLEU-4: 0.0047
+Accuracy: 0.0000
 ```
