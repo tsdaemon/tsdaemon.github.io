@@ -14,7 +14,7 @@ I decided to create a series of practical tutorials about Neural Machine Transla
 in [PyTorch](https://pytorch.org/). In this series, I will start with a simple neural
 translation model and gradually improve it using
 modern neural methods and techniques. In the first tutorial, I will create
-Ukrainian-German translator with an encoder-decoder model.*
+Ukrainian-German translator using an encoder-decoder model.*
 
 # Introduction
 
@@ -827,3 +827,8 @@ BLEU-3: 0.0125
 BLEU-4: 0.0047
 Accuracy: 0.0000
 ```
+
+*This is clearly a poor result which can not be used in production level translation system.
+But this enough to get a basic understanding of Encoder-Decoder approach. In following
+tutorials I will improve this model using different machine learning techniques and you will be able
+to learn practical aspects of NMT step by step.*
