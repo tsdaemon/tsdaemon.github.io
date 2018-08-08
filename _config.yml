@@ -12,6 +12,7 @@ markdown: kramdown
 theme: minima
 plugins:
   - jekyll-feed
+  - jekyll-scholar
 
 disqus:
   shortname: anatoliis-blog
@@ -20,3 +21,6 @@ google_analytics: UA-104247978-1
 
 exclude:
   - notebooks/
+
+scholar:
+  style: mla

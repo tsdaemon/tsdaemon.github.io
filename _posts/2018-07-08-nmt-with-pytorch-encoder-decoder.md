@@ -18,54 +18,53 @@ Ukrainian-German translator using an encoder-decoder model.*
 
 # Introduction
 
-For almost 25 years, mainstream translation systems used [Statistical Machine Translation](https://en.wikipedia.org/wiki/Statistical_machine_translation). SMT
-methods were not outperformed until 2016 when Google AI released [results of their Neural Machine Translation model](https://ai.googleblog.com/2016/09/a-neural-network-for-machine.html)
+For almost 25 years, mainstream translation systems used *[Statistical Machine Translation](https://en.wikipedia.org/wiki/Statistical_machine_translation)*. SMT
+methods were not outperformed **until 2016 when Google AI released [results of their Neural Machine Translation model](https://ai.googleblog.com/2016/09/a-neural-network-for-machine.html)**
 and started to use it in Google Translation for 9 languages.
 
-Important to notice, that GNMT result was mostly defined by a huge amount of training data and
-extensive computational power, which makes impossible to reproduce this results for
+Important to notice, that GNMT result was mostly defined by **a huge amount of training data and
+extensive computational power**, which makes impossible to reproduce this results for
 individual researchers. However, ideas and techniques, which were used in this architecture,
-were reused to solve many other problems: question answering, natural database interface,
-speech-to-text and text-to-speech and so on. Therefore, any deep learning expert
+were reused to solve **many other problems**: *question answering, natural database interface,
+speech-to-text and text-to-speech* and so on. Therefore, any deep learning expert
 can benefit from an understanding of how modern NMT works.
 
 # Theory
 
 Even though I am mostly a practitioner but I still prefer to have a solid
 mathematical representation of any model I am working with. This allows maintaining
-a correct level of abstract understanding of a problem which my model is solving.
+**a correct level of abstract understanding** of a problem which my model is solving.
 You can skip this part and go to a [model definition](#model) if you prefer to start coding.
 But I advise you to review the theoretical part to have a deep understanding of
 the following implementation.
 
-  >Given a sentence in source language $\textbf{x}$, the task is to infer a
-  sentence in target language $\textbf{y}$ which maximizes conditional
+  >Given a sentence in *source language* $\textbf{x}$, the task is to infer a
+  sentence in *target language* $\textbf{y}$ which maximizes conditional
   probability $p(\textbf{y}|\textbf{x})$:
 
   \begin{equation}
   \textbf{y} = \underset{\hat{\textbf{y}}}{\mathrm{argmax}} p(\hat{\textbf{y}}|\textbf{x})
   \end{equation}
 
-Clearly, this equation can not be used as is: there are an infinite number of all possible
-$\hat{\textbf{y}}$. But since sentence $\textbf{y}$ is a sequence of words $y_1, y_2, \ldots ,y_{t-1}, y_t$, we can decompose
-this probability as a product of probabilities for each word:
+This equation can not be used as is: there are **an infinite number of all possible
+$\hat{\textbf{y}}$**. But since a sentence $\textbf{y}$ is a sequence of words $y_1, y_2, \ldots ,y_{t-1}, y_t$,
+this probability can be decomposed as a product of probabilities for each word:
 
   \begin{equation}
   p(\textbf{y}|\textbf{x}) = \prod_{i=1}^{t} p(y_i| \textbf{x})
   \end{equation}
 
 Words probabilities in $\textbf{y}$ are not distributed independently; in the natural
-language phrases and sentences are usually follow strict or non-strict rules for word selection. Therefore,
-conditional probability for each word should also include other words from a target sentence:
+language phrases and sentences are usually **follow strict or non-strict rules for word selection**. Therefore,
+*conditional probability* for each word should also include other words from *a target sentence*:
 
   \begin{equation}
   p(\textbf{y}|\textbf{x}) = \prod_{i=1}^{t} p(y_i|y_{t}, y_{t-1}, \ldots, y_{i+1}, y_{i-1}, \ldots, y_{2}, y_{1}, \textbf{x})\label{xy}
   \end{equation}
 
-Using a predefined set of words or vocabulary $\textbf{V}$ we can infer from it
-a target sentence $textbf{y}$ word by word using this probability: $p(y_i|y_{j\ne i}, \textbf{x})$.
-The only question is how to get this probability? We can approximate it with a neural model,
-training it weights.
+Using a predefined set of words or *vocabulary* $\textbf{V}$ we can infer from it
+the target sentence $\textbf{y}$ word by word using this probability: $p(y_i|y_{j\ne i}, \textbf{x})$.
+The only question is: how to get this probability? And it can be **approximated with a neural model**.
 
 >Let's denote weights of neural model as $\theta$ and training data as a set of
 tuples $(\textbf{y}^{(x)}, \textbf{x})$, where each $\textbf{y}^{(x)}$ is a correct
@@ -73,21 +72,25 @@ translation of $\textbf{x}$. Optimal values of $\theta$ can be found by maximiza
 of a following equation:
 
   \begin{equation}
-  \theta = \underset{\theta}{\mathrm{argmax}} \sum_{\textbf{y}^{(x)}, \textbf{x}} log p(\textbf{y}^{(x)}| \textbf{x}; \theta)
+  \theta = \underset{\theta}{\mathrm{argmax}} \sum_{\textbf{y}^{(x)}, \textbf{x}} log \\ p(\textbf{y}^{(x)}| \textbf{x}; \theta)
   \label{mle}
   \end{equation}
 
-\ref{mle} is basically a [log-likelihood](http://mathworld.wolfram.com/Log-LikelihoodFunction.html) for a training data.
-Likelihood maximization means that we train a neural network to produce probabilities, which makes training set $(\textbf{y}^{(x)}, \textbf{x})$ results more likely than any other results.
+\ref{mle} is basically a *[log-likelihood](http://mathworld.wolfram.com/Log-LikelihoodFunction.html)* for a training data.
+*Likelihood maximization* means that we train a neural network **to produce probabilities**, which makes training set $(\textbf{y}^{(x)}, \textbf{x})$ results more likely than any other results.
 
 # Model
 
-From equation \ref{xy} it is possible to see, what are the main inputs of a neural model for NMT.
-To infer a word $y_i$ we need to provide a model information about previous words $y_{<i}$ (since we
-don't have next words at the moment when we inferring $y_i$, we can only use previous words) and information about a source sentence
+From equation \ref{xy} it is possible to see, what should be the **main inputs** of a neural model for NMT.
+To infer a word $y_i$ I need to provide a model information about previous words $y_{<i}$ (since we
+don't have next words at the moment when we inferring $y_i$, I can only use previous words) and information about *a source sentence*
 $\textbf{x}$.
 
-The source sentence is encoded word for word by a [**Recurrent Neural Network**](https://en.wikipedia.org/wiki/Recurrent_neural_network), which is called **Encoder**. Then the last hidden state of the Encoder is used as the first hidden state of another RNN. This network decodes a target sentence word for word, and this network is obviously called **Decoder**. This way a shared hidden state between Encoder and Decoder is used to store all the information network need to produce a valid probability distribution for $y_i$.
+The source sentence is encoded word for word by a [*Recurrent Neural Network**](https://en.wikipedia.org/wiki/Recurrent_neural_network), which is called *Encoder*. Then **the last hidden state of the Encoder is used as the first hidden state** of another RNN[^bengio2014]. This network decodes a target sentence word for word, and this network is obviously called *Decoder*. This way a shared hidden state between Encoder and Decoder is used to store **all the information a network need** to produce a valid probability distribution for $y_i$[^thought].
+
+[^thought]: This vector is called "thought vector" or "sentence vector" and this solution clearly has some drawbacks. I will present more complex technique to share information between encoder and decoder in a following tutorial.
+
+[^bengio2014]: [Bahdanau et al, 2014](https://arxiv.org/abs/1409.0473)
 
 ![Encoder-decoder](/assets/images/nmt/Seq2Seq-thought-vector.png){:width="800px"}
 *Encoder-Decoder with a thought vector*
@@ -98,9 +101,7 @@ The source sentence is encoded word for word by a [**Recurrent Neural Network**]
 ## Data preparation
 
 For this tutorial I used **bilingual datasets** from [tatoeba.org](https://tatoeba.org/eng/downloads).
-You can download language pairs data from http://www.manythings.org/anki/, or if there is no pair,
-as for Ukrainian-German, you can use my script [get_dataset.py](https://github.com/tsdaemon/neural-experiments/blob/master/nmt/scripts/get_dataset.py). It will download raw data from
-tatoeba and extract a bilingual dataset as a `csv` file.
+You can download language pairs data from http://www.manythings.org/anki/, or if there is no pair (as for Ukrainian-German), you can use my script [get_dataset.py](https://github.com/tsdaemon/neural-experiments/blob/master/nmt/scripts/get_dataset.py). It downloads raw data from tatoeba and extracts a bilingual dataset as a `csv` file.
 
 
 ```python
@@ -115,7 +116,7 @@ os.chdir('../')
 corpus = pd.read_csv(os.path.join(data_dir, '{}-{}.csv'.format(source_lang, target_lang)), delimiter='\t')
 ```
 
-To train a neural network I need to turn the sentences into something the neural network can understand, which of course means **numbers**. Each sentence is split into words and turned into a sequence of numbers. To do this, I used a vocabulary – a class which will store word indexes.  
+To train a neural network I need to turn the sentences into something **a neural network can understand**, which of course means numbers. Each sentence is split into words and turned into a sequence of numbers. To do this, I used a vocabulary – a class which stores word indexes.  
 
 
 ```python
@@ -169,14 +170,13 @@ class Vocab:
             vocab.index_words(words)
 ```
 
-Define **tokenizer functions** for you languages to split sentences into words.
-In this examples I used a standard [`nltk.tokenize.WordPunctTokenizer`](https://kite.com/python/docs/nltk.tokenize.WordPunctTokenizer) for German and
+Here I defined tokenizer functions for Ukrainian and German to **split sentences into words**.
+I used a standard [`nltk.tokenize.WordPunctTokenizer`](https://kite.com/python/docs/nltk.tokenize.WordPunctTokenizer) for German and
 a function `tokenize_words` from package [`tokenize_uk`](https://github.com/lang-uk/tokenize-uk) for Ukrainian.
-Also, replace the input file with yours.
 
-Since there are a lot of example sentences and I want to train something quickly, I **trimmed** the data set to only relatively short and simple sentences. Here the maximum length is 10 words (that includes punctuation)
+Since there are a lot of example sentences and I want to train something quickly, I trimmed the data set to only **relatively short and simple** sentences. Here the maximum length is 10 words (that includes punctuation).
 
-Additionally, you might want to filter out **rare words** which occur only a few times in corpus. This words could not be learned efficiently since there are not enough training examples for them. This will reduce vocabulary size and decrease training time.
+Additionally, you might want to filter out rare words which occur only a few times in the corpus. This words could not be learned efficiently since **there are not enough training examples for them**. This will reduce vocabulary size and decrease training time.
 
 
 ```python
@@ -258,9 +258,11 @@ for source, target in examples:
     Source: "багато американців цікавляться джазом .", target: "viele amerikaner interessieren sich für jazz ."
 
 
-As you can see, some translation pairs can **duplicate** each other: one source sentence might have multiple target references. This naturally happens in language, we always have options for translation. And this should be considered when we train NMT system: that it is possible to have more than one option of a correct model output.
+As you can see, some translation pairs can duplicate each other: **one source sentence might have multiple target references**. This naturally happens in language, we always have options for translation. And this should be considered when we train NMT system: that it is possible to have more than one option of a correct model output.
 
-Translation quality metrics like **BLEU** (it will be described in details later) are designed to use multiple references of a correct translation. To take this into account during evaluation I combined pairs with an identical source into one pair with one source and multiple targets.
+Translation quality metrics like *[BLEU](https://en.wikipedia.org/wiki/BLEU)*[^bleu] (it will be described in details later) are designed to use **multiple references of a correct translation**. To take this into account during evaluation I combined pairs with an identical source into one pair with one source and multiple targets.
+
+[^bleu]: [Papineni et al, 2002](http://aclweb.org/anthology/P/P02/P02-1040.pdf)
 
 
 ```python
@@ -275,20 +277,14 @@ source_sents, target_sents = zip(*source_to_target.items())
 len(source_sents)
 ```
 
-
-
-
     11967
 
-
-
-Data for **deep learning experiment** is usually split into three parts:
+Data for *deep learning experiment* is usually split into three parts:
 * *Training data* is used for neural network training;
 * *Development data* is used to select an optimal training stop point;
 * *Test data* is used for final evaluation of experiment performance.
 
 I used 80% of the data as a training set, 6% of the data as a development set and 14% of the data as a test set.
-
 
 ```python
 import numpy as np
@@ -323,11 +319,11 @@ training_source = training_s
 training_target = training_t
 ```
 
-PyTorch uses its own format of data – **Tensor**. A Tensor is a multi-dimensional array of numbers with some type e.g. FloatTensor or LongTensor.
+PyTorch uses its own format of data – *Tensor*. A Tensor is a multi-dimensional array of numbers with some type e.g. FloatTensor or LongTensor.
 
-Before I can use the training data, I need to convert it into tensors using previously defined **word indices**. Also, I need to have source sentences as tensors for model validation with development and test sample.
+Before I can use the training data, I need to convert it into tensors  **using previously defined word indices**. Also, I need to have source sentences as tensors for model validation with development and test sample.
 
-Each sentence in the tensor form should have **special tokens** SOS (start of a sentence) and EOS (end of a sentence) for a model being able to identify sequence start and finish. Also, all sentences should have the same length to make possible the batch training, therefore I extended them with token PAD if needed.
+Each sentence in the tensor form **should have special tokens** SOS (start of a sentence) and EOS (end of a sentence) for a model being able to identify sequence start and finish. Also, all sentences should have the same length to make possible the *batch training*, therefore I extended them with a token PAD if needed.
 
 
 ```python
@@ -389,14 +385,20 @@ if USE_CUDA:
 
 ## Encoder
 
-The encoder of a Seq2seq network is a [**Recurrent Neural Network**](https://en.wikipedia.org/wiki/Recurrent_neural_network). A **recurrent network** can process model a sequence of related data (sentence in our case) using the same set of weights. To do this, RNN uses its output from a previous step as input along with input from the sequence.
+The encoder of an Encoder-Decoder network is a [*Recurrent Neural Network*](https://en.wikipedia.org/wiki/Recurrent_neural_network). A recurrent network can **model a sequence of related data** (sentence in our case) using the same set of weights. To do this, RNN uses its output from a previous step as input along with the next input from a sequence.
 
-A naive implementation of RNN is subject to **problems with a gradient for long sequences** (see more on [WildML](http://www.wildml.com/2015/10/recurrent-neural-networks-tutorial-part-3-backpropagation-through-time-and-vanishing-gradients/); therefore, I used [**Long-Short Term Memory**](https://en.wikipedia.org/wiki/Long_short-term_memory) as a recurrent module. You should not care about its implementation since it already implemented in PyTorch: [nn.LSTM](https://pytorch.org/docs/stable/_modules/torch/nn/modules/rnn.html#LSTM). This module allows bi-directional sequence processing out-of-the-box – this allows to capture backward relations in a sentence as well as forward relations.
+A naive implementation of RNN is subject to **problems with a gradient for long sequences**[^vanishing]; therefore, I used [**Long-Short Term Memory**](https://en.wikipedia.org/wiki/Long_short-term_memory)[^lstm] as a recurrent module. You should not care about its implementation since it already implemented in PyTorch: [nn.LSTM](https://pytorch.org/docs/stable/_modules/torch/nn/modules/rnn.html#LSTM). This module allows *bi-directional sequence processing* out-of-the-box – this allows to capture backward relations in a sentence as well as forward relations.
 
-Additionally, I used **embeddings** module to convert word indices into dense vectors. This allows projecting discrete symbols (words) into continuous space which reflects semantical relations in spatial words positions. For this experiment, I did not use pre-trained word vectors and train this representation using machine translation supervision signal. But you may use the pre-trained word embeddings (for Ukrainian [lang-uk](http://lang.org.ua/en/models/#anchor4) project).
+[^vanishing]: Read more on [WildML](http://www.wildml.com/2015/10/recurrent-neural-networks-tutorial-part-3-backpropagation-through-time-and-vanishing-gradients/).
 
-To not forget the meaning of dimensions for input vectors, I left comments like `# word_inputs: (batch_size, seq_length)`. Above means that variable `word_inputs` contains a reference to tensor, which has shape `(batch_size, seq_length)`, e.g. it is an array of sequences of length `seq_length`, where array length is `batch_size`.
+Additionally, I used *embeddings module* to convert word indices into dense vectors. This allows projecting discrete symbols (words) into continuous space which **reflects semantical relations in spatial words positions**. For this experiment, I did not use pre-trained word vectors and trained this representation using machine translation supervision signal. But you may use the pre-trained word embeddings for any language[^languk].
 
+[^languk]: For Ukrainian use vectors from [lang-uk](http://lang.org.ua/en/models/#anchor4) project. For other languages, I recommend
+[FastText](https://github.com/facebookresearch/fastText/blob/master/pretrained-vectors.md) embeddings.
+
+To not forget the meaning of dimensions for input vectors, I left comments like `# word_inputs: (batch_size, seq_length)`. Above means that variable `word_inputs` contains a reference to a tensor, which has shape `(batch_size, seq_length)`, e.g. it is an array of sequences of length `seq_length`, where array length is `batch_size`.
+
+[^lstm]: More information about LSTM can be found in [Colah's blog](http://colah.github.io/posts/2015-08-Understanding-LSTMs/) or in the original paper [Hochreiter and Schmidhuber, 1997](https://www.researchgate.net/publication/13853244_Long_Short-term_Memory).
 
 ```python
 import torch.nn as nn
@@ -439,8 +441,8 @@ class EncoderRNN(nn.Module):
 
 ## Decoder
 
-Decoder module is similar to encoder with the difference in that it **generates** a sequence, so it will process inputs one by one; therefore it cannot be bidirectional.
-
+Decoder module is similar to encoder with the difference in that it **generates a sequence**,
+instead of modeling it, so it will infer inputs one by one; therefore it cannot be bi-directional.
 
 ```python
 class DecoderRNN(nn.Module):
@@ -501,12 +503,12 @@ print(encoder_outputs.shape, encoder_hidden[0].shape, encoder_hidden[1].shape)
     torch.Size([1, 3, 10]) torch.Size([4, 1, 5]) torch.Size([4, 1, 5])
 
 
-`encoder_hidden` is a tuple for h and c components of LSTM hidden state. In PyTorch, tensors of LSTM hidden components have the following meaning of **dimensions**:
-* First dimension is n_layers*directions, meaning that if we have a bidirectional network, then each layer will store two items in this direction.
+`encoder_hidden` is a tuple for h and c components of LSTM *hidden state*. In PyTorch, tensors of LSTM hidden components have the following meaning of dimensions:
+* First dimension is `n_layers * directions`, meaning that if we have a bi-directional network, **then each layer will store two items in this direction**.
 * Second dimension is a batch dimension.
 * Third dimension is a hidden vector itself.
 
-The decoder uses **a single directional LSTM**, therefore we need to reshape encoders h and c before sending them into decoder: concatenate all bi-directional vectors into single-direction vectors. This means, that every two vectors along `n_layers*directions` I combined into a single vector, increasing the size of hidden vector dimension in two times and decreasing size of the first dimension to `n_layers`, which is two.
+The decoder uses a single directional LSTM, therefore we need to reshape encoders `h` and `c` before sending them into decoder: **concatenate all bi-directional vectors into single-direction vectors**. This means, that every two vectors along `n_layers*directions` I combined into a single vector, increasing the size of the hidden vector dimension in two times and decreasing a size of the first dimension to `n_layers`, which is two.
 
 
 ```python
@@ -610,7 +612,7 @@ class Seq2seq(nn.Module):
 
 # Training
 
-To optimize neural network weights I need to have a model itself and **optimizer**. Model is already defined and the optimizer is usually available in the NN framework. I used [Adam](http://ruder.io/optimizing-gradient-descent/index.html#adam) from [torch.optim](https://pytorch.org/docs/stable/optim.html).
+To optimize neural network weights I need to have a model itself and *optimizer*. Model is already defined and the optimizer is usually available in the NN framework. I used [Adam](http://ruder.io/optimizing-gradient-descent/index.html#adam) from [torch.optim](https://pytorch.org/docs/stable/optim.html).
 
 
 ```python
@@ -620,7 +622,7 @@ model = Seq2seq(len(source_vocab), len(target_vocab), 300, 1)
 optim = Adam(model.parameters(), lr=0.0001)
 ```
 
-Since neural network training is a computationally expensive process, it is better to a train neural network for multiple examples at once. Therefore I need to split our training data on **mini-batches**.
+Since neural network training is a computationally expensive process, it is better to a train neural network for multiple examples at once. Therefore I need to split the training data on *mini-batches*.
 
 
 ```python
@@ -637,16 +639,16 @@ def batch_generator(batch_indices, batch_size):
             yield batch_indices[batch_start:batch_end]
 ```
 
-Previously I mentioned **a log-likelyhood function** which is used to optimize model parameters; in PyTorch this function is implemented in module `CrossEntropyLoss`:
+Previously I mentioned *a log-likelyhood function* which is used to optimize model parameters; in PyTorch this function is implemented in module `CrossEntropyLoss`:
 
 
 ```python
 cross_entropy = nn.CrossEntropyLoss()
 ```
 
-To evaluate the performance of our network I should use a translation quality metric. Standard selection for neural machine translation would be [BLEU](https://en.wikipedia.org/wiki/BLEU) - **bilingual evaluation understudy**. This metric is proven to have the most correlation with a human judgment of translation quality.
+To evaluate the performance of our network I should use a translation quality metric. Standard selection for neural machine translation would be previously mentioned BLEU - **bilingual evaluation understudy**. This metric is proven to have the most correlation with a human judgment of translation quality.
 
-What is important to understand that BLEU is looking **how many common phrases ([n-grams](https://en.wikipedia.org/wiki/N-gram)) are shared** between model translation and multiple correct translation references. This could be unigrams (phrases of one word) in BLEU-1, bigrams (two words) in BLEU-2 and so on. Since my dataset is relatively small for a neural model, I will use less restrictive BLEU-1 as the main metric.
+What is important to understand that BLEU is looking **how many common phrases ([n-grams](https://en.wikipedia.org/wiki/N-gram)) are shared** between a model translation and multiple correct translation references. This could be unigrams (phrases of one word) in BLEU-1, bigrams (two words) in BLEU-2 and so on. Since my dataset is relatively small for a neural model, I used less restrictive BLEU-1 as the main metric.
 
 
 ```python
@@ -683,12 +685,11 @@ def score(model, X, target, desc='Scoring...'):
     return scores
 ```
 
-Finally, we can start to **train** our model. Each training epoch includes *a forward propagation*, which yields some training hypothesis for training target sentences; then `cross_entropy` calculates loss for this hypothesis and `loss.backward()` calculates *gradient* with respect to the loss for each model parameter. After that, `optim.step()` uses the gradient to **adjust model parameters and minimize loss**.
+Finally, model can be trained. Each *training epoch* includes *a forward propagation*, which yields some *training hypothesis* for training source sentences; then `cross_entropy` calculates loss for this hypothesis and `loss.backward()` calculates *gradient* with respect to the loss for each model parameter. After that, `optim.step()` uses the gradient to **adjust model parameters and minimize loss**.
 
 After each training epoch, the development set is used **to evaluate model performance**. I used `early_stop_counter` to stop the training process if BLEU-1 is not getting better for 10 epochs.
 
-Module `tqdm` is optional to use, it is a **handy and simple** way to create a progress bar for long operations.
-
+Module `tqdm` is optional to use, it is a handy and simple way to create a progress bar for long operations.
 
 ```python
 from tqdm import tqdm_notebook as tqdm
@@ -769,7 +770,7 @@ Early stop!
 ```
 
 
-I prepared some **plots** to get a visual understanding how a validation score changed during training.
+I prepared some plots to get **a visual understanding** of how a validation score changed during training.
 
 
 ```python
@@ -810,7 +811,7 @@ plt.show()
 
 ![Results](/assets/images/nmt/encoder-decoder_33_0.png)
 
-Finally, each experiment should be evaluated with **unseen data**. When I selected `best_model` according to the best validation score, I made the model slightly overfit on validation data; therefore, to get a fair quality assessment I scored `best_model` on the test set.
+Finally, each experiment should be evaluated with *unseen data*. When I selected `best_model` according to the best validation score, I made **the model slightly overfit on validation data**; therefore, to get a fair quality assessment I scored `best_model` on the test set.
 
 
 ```python
