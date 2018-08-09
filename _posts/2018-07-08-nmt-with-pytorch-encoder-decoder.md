@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Neural Machine Translation With PyTorch"
-subtitle: "Tutorial 1: Encoder-decoder"
+subtitle: "Tutorial 1: Encoder-Decoder"
 date:   2018-07-08 15:37:21 +0300
 class: post-template
 subclass: 'post'
