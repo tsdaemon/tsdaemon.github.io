@@ -81,9 +81,9 @@ of a following equation:
 
 # Model
 
-From equation \ref{xy} it is possible to see, what should be the **main inputs** of a neural model for NMT.
-To infer a word $y_i$ I need to provide a model information about previous words $y_{<i}$ (since we
-don't have next words at the moment when we inferring $y_i$, I can only use previous words) and information about *a source sentence*
+From equation \ref{xy} you can see, how should be connected information inside of a neural model for machine translation.
+To infer a word $y_i$ you need to provide a model information about previous words $y_{<i}$ (since you
+don't have next words at the moment when we inferring $y_i$, you can only use previous words) and information about *a source sentence*
 $\textbf{x}$.
 
 The source sentence is encoded word for word by a [*Recurrent Neural Network*](https://en.wikipedia.org/wiki/Recurrent_neural_network), which is called *Encoder*. Then **the last hidden state of the Encoder is used as the first hidden state** of another RNN[^bengio2014]. This network decodes a target sentence word for word, and this network is obviously called *Decoder*. This way a shared hidden state between Encoder and Decoder is used to store **all the information a network need** to produce a valid probability distribution for $y_i$[^thought].
@@ -94,7 +94,6 @@ The source sentence is encoded word for word by a [*Recurrent Neural Network*](h
 
 ![Encoder-decoder](/assets/images/nmt/Seq2Seq-thought-vector.png){:width="800px"}
 *Encoder-Decoder with a thought vector*
-
 
 # Implementation
 
