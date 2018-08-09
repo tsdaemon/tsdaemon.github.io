@@ -86,7 +86,7 @@ To infer a word $y_i$ you need to provide the model with data about previous wor
 don't have next words at the moment when you infer $y_i$, you can only use previous words) and information about *a source sentence*
 $\textbf{x}$.
 
-The source sentence is encoded word for word by a [*Recurrent Neural Network*](https://en.wikipedia.org/wiki/Recurrent_neural_network), which is called *Encoder*. Then **the last hidden state of the Encoder is used as the first hidden state** of another RNN[^bengio2014]. This network decodes a target sentence word for word, and this network is obviously called *Decoder*. This way a shared hidden state between Encoder and Decoder is used to store **all the information a network need** to produce a valid probability distribution for $y_i$[^thought].
+The source sentence is encoded word for word by a [*Recurrent Neural Network*](https://en.wikipedia.org/wiki/Recurrent_neural_network), which is called *Encoder*. Then **the last hidden state of the Encoder is used as the first hidden state** of another RNN[^bengio2014]. This network decodes a target sentence word for word, and this network is obviously called *Decoder*. This way a shared hidden state between Encoder and Decoder is used to store **all the information the Decoder need** to produce a valid probability distribution for $y_i$[^thought].
 
 [^thought]: This vector is called "thought vector" or "sentence vector" and this solution clearly has some drawbacks. I will present more complex technique to share information between encoder and decoder in a following tutorial.
 
