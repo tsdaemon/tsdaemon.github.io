@@ -393,8 +393,7 @@ A naive implementation of RNN is subject to **problems with a gradient for long 
 
 Additionally, I used *embeddings module* to convert word indices into dense vectors. This allows projecting discrete symbols (words) into continuous space which **reflects semantical relations in spatial words positions**. For this experiment, I did not use pre-trained word vectors and trained this representation using machine translation supervision signal. But you may use the pre-trained word embeddings for any language[^languk].
 
-[^languk]: For Ukrainian use vectors from [lang-uk](http://lang.org.ua/en/models/#anchor4) project. For other languages, I recommend
-[FastText](https://github.com/facebookresearch/fastText/blob/master/pretrained-vectors.md) embeddings.
+[^languk]: For Ukrainian use vectors from [lang-uk](http://lang.org.ua/en/models/#anchor4) project. For other languages, I recommend [FastText](https://github.com/facebookresearch/fastText/blob/master/pretrained-vectors.md) embeddings.
 
 To not forget the meaning of dimensions for input vectors, I left comments like `# word_inputs: (batch_size, seq_length)`. Above means that variable `word_inputs` contains a reference to a tensor, which has shape `(batch_size, seq_length)`, e.g. it is an array of sequences of length `seq_length`, where array length is `batch_size`.
 
