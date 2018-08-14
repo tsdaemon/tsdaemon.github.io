@@ -24,3 +24,9 @@ exclude:
 
 scholar:
   style: mla
+
+include: ['courses']
+
+header_pages:
+  - about.md
+  - courses.md
