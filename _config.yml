@@ -13,6 +13,7 @@ theme: minima
 plugins:
   - jekyll-feed
   - jekyll-scholar
+  - jekyll-seo-tag
 
 disqus:
   shortname: anatoliis-blog
