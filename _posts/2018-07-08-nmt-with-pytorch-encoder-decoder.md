@@ -276,7 +276,12 @@ source_sents, target_sents = zip(*source_to_target.items())
 len(source_sents)
 ```
 
+
+
+
     11967
+
+
 
 Data for *deep learning experiment* is usually split into three parts:
 * *Training data* is used for neural network training;
@@ -284,6 +289,7 @@ Data for *deep learning experiment* is usually split into three parts:
 * *Test data* is used for final evaluation of experiment performance.
 
 I used 80% of the data as a training set, 6% of the data as a development set and 14% of the data as a test set.
+
 
 ```python
 import numpy as np
@@ -318,7 +324,7 @@ training_source = training_s
 training_target = training_t
 ```
 
-PyTorch uses its own format of data – *Tensor*. A Tensor is a multi-dimensional array of numbers with some type e.g. FloatTensor or LongTensor.
+PyTorch uses its own format of data – *Tensor*. It is a multi-dimensional array of numbers with some type e.g. FloatTensor or LongTensor.
 
 Before I can use the training data, I need to convert it into tensors  **using previously defined word indices**. Also, I need to have source sentences as tensors for model validation with development and test sample.
 
@@ -398,6 +404,7 @@ To not forget the meaning of dimensions for input vectors, I left comments like 
 
 [^lstm]: More information about LSTM can be found in [Colah's blog](http://colah.github.io/posts/2015-08-Understanding-LSTMs/) or in the original paper [Hochreiter and Schmidhuber, 1997](https://www.researchgate.net/publication/13853244_Long_Short-term_Memory).
 
+
 ```python
 import torch.nn as nn
 import torch.nn.init as init
@@ -426,8 +433,8 @@ class EncoderRNN(nn.Module):
         # embedded (batch_size, seq_length, hidden_size)
         embedded = self.embedding(word_inputs)
         # output (batch_size, seq_length, hidden_size*directions)
-        # hidden (h: (batch_size, num_layers*directions, hidden_size),
-        #         c: (batch_size, num_layers*directions, hidden_size))
+        # hidden (h: (num_layers*directions, batch_size, hidden_size),
+        #         c: (num_layers*directions, batch_size, hidden_size))
         output, hidden = self.lstm(embedded, hidden)
         return output, hidden
 
@@ -441,6 +448,7 @@ class EncoderRNN(nn.Module):
 
 Decoder module is similar to encoder with the difference in that it **generates a sequence**,
 instead of modeling it, so it will infer inputs one by one; therefore it cannot be bi-directional.
+
 
 ```python
 class DecoderRNN(nn.Module):
@@ -508,6 +516,11 @@ print(encoder_outputs.shape, encoder_hidden[0].shape, encoder_hidden[1].shape)
 
 The decoder uses a single directional LSTM, therefore we need to reshape encoders `h` and `c` before sending them into decoder: **concatenate all bi-directional vectors into single-direction vectors**. This means, that every two vectors along `n_layers*directions` I combined into a single vector, increasing the size of the hidden vector dimension in two times and decreasing a size of the first dimension to `n_layers`, which is two.
 
+It is important to understand, how the reshaping is done[^reshape]. [Torch documentation](https://pytorch.org/docs/stable/torch.html#torch.reshape) is not vocal enough about this question, but you can refer to [Numpy documentation](https://docs.scipy.org/doc/numpy/reference/generated/numpy.reshape.html) for explanation. Basically, default reshape approach (C-order) **starts from changing the last index and steadily moves from latter to starter indexes**.
+
+What does it mean for our case? In this example I have the hidden state of endoder LSTM with one batch, two layers and two directions, and 5-dimensional hidden vector. It has a shape `(4,1,5)`. I need to reshape it into an initial hidden state of decoder LSTM, which should has one batch, a single direction and two layers, and 10-dimensional hidden vector, final shape is `(2,1,10)`. To do that with `torch.reshape` **I need to swap an order of dimensions first** to have tensor with shape `(1,4,5)`, reshape it to `(1,2,10)` and then change order back to `(2,1,10)`. If I did this without changing the dimensions order, **values from different batches would be mixed together, and thought vector would not be representation of a source sentence anymore**.
+
+[^reshape]: The previous version of this article has an error because of incorrect reshape.
 
 ```python
 decoder_test = DecoderRNN(vocab_size, hidden_dim, n_layers)
@@ -515,8 +528,8 @@ print(decoder_test)
 
 word_inputs = torch.LongTensor([[1, 2, 3]])
 
-decoder_hidden_h = encoder_hidden[0].reshape(2, 1, 10)
-decoder_hidden_c = encoder_hidden[1].reshape(2, 1, 10)
+decoder_hidden_h = encoder_hidden[0].permute(1, 0, 2).reshape(1, 2, 10).permute(1, 0, 2)
+decoder_hidden_c = encoder_hidden[1].permute(1, 0, 2).reshape(1, 2, 10).permute(1, 0, 2)
 
 if USE_CUDA:
     decoder_test.cuda()
@@ -567,8 +580,8 @@ class Seq2seq(nn.Module):
         encoder_outputs, encoder_hidden = self.encoder(x, init_hidden)
         encoder_hidden_h, encoder_hidden_c = encoder_hidden
 
-        self.decoder_hidden_h = encoder_hidden_h.reshape(self.n_layers, batch_size, self.hidden_size)
-        self.decoder_hidden_c = encoder_hidden_c.reshape(self.n_layers, batch_size, self.hidden_size)
+        self.decoder_hidden_h = encoder_hidden_h.permute(1,0,2).reshape(batch_size, self.n_layers, self.hidden_size).permute(1,0,2)
+        self.decoder_hidden_c = encoder_hidden_c.permute(1,0,2).reshape(batch_size, self.n_layers, self.hidden_size).permute(1,0,2)
         return self.decoder_hidden_h, self.decoder_hidden_c
 
     def forward_train(self, x, y):
@@ -683,11 +696,12 @@ def score(model, X, target, desc='Scoring...'):
     return scores
 ```
 
-Finally, model can be trained. Each *training epoch* includes *a forward propagation*, which yields some *training hypothesis* for training source sentences; then `cross_entropy` calculates loss for this hypothesis and `loss.backward()` calculates *gradient* with respect to the loss for each model parameter. After that, `optim.step()` uses the gradient to **adjust model parameters and minimize loss**.
+Finally, I can train my model. Each *training epoch* includes *a forward propagation*, which yields some *training hypothesis* for training source sentences; then `cross_entropy` calculates loss for this hypothesis and `loss.backward()` calculates *gradient* with respect to the loss for each model parameter. After that, `optim.step()` uses the gradient to **adjust model parameters and minimize loss**.
 
 After each training epoch, the development set is used **to evaluate model performance**. I used `early_stop_counter` to stop the training process if BLEU-1 is not getting better for 10 epochs.
 
 Module `tqdm` is optional to use, it is a handy and simple way to create a progress bar for long operations.
+
 
 ```python
 from tqdm import tqdm_notebook as tqdm
@@ -756,16 +770,16 @@ for epoch in range(10000):
             break
 ```
 
-```  
-Epoch 20 validation is finished.
-BLEU-1: 0.1949
-BLEU-2: 0.0464
-BLEU-3: 0.0094
-BLEU-4: 0.0000
-Accuracy: 0.0000
-No improvements for 10 epochs.
-Early stop!
-```
+    Epoch 45 training is finished, loss: 0.8080
+
+    Epoch 45 validation is finished.
+    BLEU-1: 0.4683
+    BLEU-2: 0.2692
+    BLEU-3: 0.1720
+    BLEU-4: 0.1190
+    Accuracy: 0.0432
+    No improvements for 10 epochs.
+    Early stop!
 
 
 I prepared some plots to get **a visual understanding** of how a validation score changed during training.
@@ -807,7 +821,76 @@ for name in score_functions.keys():
 plt.show()
 ```
 
-![Results](/assets/images/nmt/encoder-decoder_33_0.png)
+
+![png](/assets/images/nmt/encoder-decoder_37_0.png)
+
+
+Here are some examples of translation from my model.
+
+
+```python
+examples = zip(dev_source[:10], dev_target[:10], x_development[:10])
+for source, target, x in examples:
+    y = model(x.unsqueeze(0))
+    translation = ' '.join(target_vocab.unidex_words(y[1:-1]))
+    source = ' '.join(source)
+    references = '\n'.join([' '.join(t) for t in target])
+
+    print('Source: "{}"\nReferences:\n{}\nTranslation: "{}"\n'.format(source, references, translation))
+```
+
+    Source: "їм потрібний том ."
+    References:
+    sie wollen tom .
+    Translation: "tom hat angst ."
+
+    Source: "бог існує ?"
+    References:
+    gibt es gott ?
+    Translation: "ist die wurdest ?"
+
+    Source: "він написав листа ."
+    References:
+    er hat einen brief geschrieben .
+    er schrieb einen brief .
+    Translation: "er hat einen brief geschrieben ."
+
+    Source: "я не говорю німецькою ."
+    References:
+    ich spreche kein deutsch .
+    ich spreche nicht deutsch .
+    Translation: "ich spreche kein deutsch ."
+
+    Source: "у вас є татуювання ?"
+    References:
+    haben sie eine tätowierung ?
+    Translation: "haben sie ein bisschen ?"
+
+    Source: "це копія ."
+    References:
+    das ist eine kopie .
+    Translation: "es ist eine langweilig ."
+
+    Source: "у мене є брат - близнюк ."
+    References:
+    ich habe einen zwillingsbruder .
+    Translation: "ich habe eine familie ."
+
+    Source: "мені подобається світло свічок ."
+    References:
+    ich mag kerzenlicht .
+    Translation: "ich sehe gern ein neues ."
+
+    Source: "мають право ."
+    References:
+    es ist ihr recht .
+    Translation: "das gesetz ist ein ."
+
+    Source: "перепрошую , скільки це коштує ?"
+    References:
+    verzeihung , was kostet das ?
+    Translation: "wie geht es , das haben das ist ?"
+
 
 Finally, each experiment should be evaluated with *unseen data*. When I selected `best_model` according to the best validation score, I made **the model slightly overfit on validation data**; therefore, to get a fair quality assessment I scored `best_model` on the test set.
 
@@ -818,16 +901,14 @@ scores_str = '\n'.join(['{}: {:.4f}'.format(name, score) for name, score in test
 print('Final score:\n' + scores_str)
 ```
 
-```
-Final score:
-BLEU-1: 0.1919
-BLEU-2: 0.0487
-BLEU-3: 0.0125
-BLEU-4: 0.0047
-Accuracy: 0.0000
-```
+    Final score:
+    BLEU-1: 0.4855
+    BLEU-2: 0.2853
+    BLEU-3: 0.1814
+    BLEU-4: 0.1242
+    Accuracy: 0.0424
 
-*This is clearly a poor result which can not be used in production level translation system.
+*This is clearly a naive result which can not be used in production level translation system.
 But this enough to get a basic understanding of Encoder-Decoder approach. In following
 tutorials I will improve this model using different machine learning techniques and you will be able
 to learn practical aspects of NMT step by step.*
