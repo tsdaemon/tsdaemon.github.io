@@ -14,3 +14,5 @@ Currently I am a software developer and data science associate in
 I am resided in [Lviv](https://en.wikipedia.org/wiki/Lviv), it is a
 beautiful Ukrainian city, and if you want to go for a beer here – just send me a
 message.
+
+CV: [PDF](https://drive.google.com/open?id=1As4W3zrXuE6LvOcZK78OMkGJTkBjfiOB)
