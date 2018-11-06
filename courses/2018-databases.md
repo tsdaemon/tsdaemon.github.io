@@ -2,6 +2,7 @@
 layout: page
 title: Introduction to databases
 permalink: /courses/2018-databases/
+comments: true
 ---
 
 *Wow, this one was pretty tough! I've just finished my MSc and started to work

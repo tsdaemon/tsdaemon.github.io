@@ -1,0 +1,220 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Welcome to Overleaf --- just edit your LaTeX on the left,
+% and we'll compile it for you on the right. If you give
+% someone the link to this page, they can edit at the same
+% time. See the help menu above for more info. Enjoy!
+%
+% Note: you can export the pdf to see the result at full
+% resolution.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Title: Block diagram of Third order noise shaper in Compact Disc Players
+% Author: Ramón Jaramillo
+\documentclass[tikz,14pt,border=10pt]{standalone}
+%%%<
+\usepackage{verbatim}
+%%%>
+\begin{comment}
+:Title: Block diagram of Third order noise shaper in Compact Disc Players
+:Tags: Diagrams;Block diagrams;Electrical engineering
+:Author: Ramón Jaramillo
+:Slug: noise-shaper
+
+This is a block diagram of a third-order noise shaper, circuit located inside
+of a compact disc player.
+
+Source: A fundamental introduction to the Compact Disc Player (1994),
+located in http://www.tc.umn.edu/~erick205/Papers/3011Paper.pdf, page 17
+by Grant M. Erickson
+\end{comment}
+\usepackage{textcomp}
+\usetikzlibrary{shapes,arrows}
+\begin{document}
+% Definition of blocks:
+\tikzset{%
+  block/.style    = {draw, thick, rectangle, minimum height = 3em,
+    minimum width = 3em},
+  sum/.style      = {draw, circle, node distance = 2cm}, % Adder
+  input/.style    = {coordinate}, % Input
+  output/.style   = {coordinate} % Output
+}
+% Defining string as labels of certain blocks.
+\newcommand{\suma}{\Large$+$}
+\newcommand{\inte}{$\displaystyle \int$}
+\newcommand{\derv}{\huge$\frac{d}{dt}$}
+
+\begin{tikzpicture}[auto, thick, node distance=2cm, >=triangle 45]
+% Drawing Encoder
+% Step 1
+\draw
+	node at (1,0)[right=-3.2mm]{\Large \textopenbullet}
+	node at (1,0)[input, name=hx0] {}
+	node [block, right of=hx0] (rnnx1) {
+      \begin{tabular}{cc}
+      RNN \\
+      Encoder
+      \end{tabular}
+    }
+    node [block, below of=rnnx1] (embedx1) {Embed}
+    node at (3,-4)[above=-3.2mm]{\Large \textopenbullet}
+    node at (3,-4)[input, name=x1] {};
+
+	\draw[->](hx0) -- node {$h_{x_0}$}(rnnx1);
+    \draw[->](embedx1) -- node {$x_1$} (rnnx1);
+    \draw[->](x1) -- node {It}(embedx1);
+
+% Step 2
+\draw
+	node at (6,0)[block] (rnnx2) {
+      \begin{tabular}{cc}
+      RNN \\
+      Encoder
+      \end{tabular}
+    }
+    node [block, below of=rnnx2] (embedx2) {Embed}
+    node at (6,-4)[above=-3.2mm]{\Large \textopenbullet}
+    node at (6,-4)[input, name=x2] {};
+
+    \draw[->](rnnx1) -- node {$h_{x_1}$}(rnnx2);
+    \draw[->](embedx2) -- node {$x_2$} (rnnx2);
+    \draw[->](x2) -- node {is}(embedx2);
+
+% Step 3
+\draw
+	node at (9,0)[block] (rnnx3) {
+      \begin{tabular}{cc}
+      RNN \\
+      Encoder
+      \end{tabular}
+    }
+    node [block, below of=rnnx3] (embedx3) {Embed}
+    node at (9,-4)[above=-3.2mm]{\Large \textopenbullet}
+    node at (9,-4)[input, name=x3] {};
+
+    \draw[->](rnnx2) -- node {$h_{x_2}$}(rnnx3);
+    \draw[->](embedx3) -- node {$x_3$} (rnnx3);
+    \draw[->](x3) -- node {an}(embedx3);
+
+% Step 4
+\draw
+	node at (12,0)[block] (rnnx4) {
+      \begin{tabular}{cc}
+      RNN \\
+      Encoder
+      \end{tabular}
+    }
+    node [block, below of=rnnx4] (embedx4) {Embed}
+    node at (12,-4)[above=-3.2mm]{\Large \textopenbullet}
+    node at (12,-4)[input, name=x4] {};
+
+    \draw[->](rnnx3) -- node {$h_{x_3}$}(rnnx4);
+    \draw[->](embedx4) -- node {$x_4$} (rnnx4);
+    \draw[->](x4) -- node {Apple}(embedx4);
+
+\draw [color=gray,thick](1.75,-3) rectangle (13.25,1);
+\node at (1.75,0.8) [above=5mm, right=0mm] {\textsc{Encoder}};
+
+% Attention
+\draw
+	node at (7.5, 2.5)[block, text width=10cm,align=center](attention) {\Large{Attention over $\textbf{H}_x$}}
+	node at (4.1,0) {\textbullet}
+    node at (7.1,0) {\textbullet}
+    node at (10.1,0) {\textbullet};
+\draw[->] (rnnx1) -- (4.1,0) -- (4.1,1.5) -- (attention);
+\draw[->] (rnnx2) -- (7.1,0) -- (7.1,1.5) -- (attention);
+\draw[->] (rnnx3) -- (10.1,0) -- (10.1,1.5) -- (attention);
+\draw[->] (rnnx4) -- (13.1,0) -- (13.1,1.5) node [right] {$h_{x_4}$} -- (attention);
+
+% Drawing Decoder
+% Step 1
+\draw
+	node at (0,8)[right=-3.2mm]{\Large \textopenbullet}
+	node at (0,8)[input, name=hy0] {}
+	node [block, right of=hy0] (rnny1) {
+      \begin{tabular}{cc}
+      RNN \\
+      Decoder
+      \end{tabular}
+    }
+    node at (1.5,4)[above=-3.2mm]{\Large \textopenbullet}
+    node at (1.5,4)[input, name=y1] {}
+    node [block, above of=y1] (embedy1) {Embed}
+    node [above of=rnny1] (word1) {Es};
+
+	\draw[->](hy0) -- node {$h_{y_0}$}(rnny1);
+    \draw[->](embedy1) -- node [right] {$y_1$} (1.5,7.45);
+    \draw[->](y1) -- node {start\_token}(embedy1);
+    \draw[->](attention) -- (2.5,4) -- node [right]{$\phi_1$}(2.5,7.45);
+    \draw[->](rnny1) -- (word1);
+% Step 2
+\draw
+	node at (5,8)[block] (rnny2) {
+      \begin{tabular}{cc}
+      RNN \\
+      Decoder
+      \end{tabular}
+    }
+    node at (4.5,6) [block] (embedy2) {Embed}
+    node [above of=rnny2] (word2) {ist};
+
+    \draw[->](rnny1) -- node {$h_{y_1}$}(rnny2);
+    \draw[->](embedy2) -- node {$y_2$} (4.5,7.45);
+    \draw[->](word1) -- (3.1,10) -- (3.1,6) -- (embedy2);
+    \draw[->](attention) -- (5.5,4) -- node [right]{$\phi_2$}(5.5,7.45);
+    \draw[->](rnny2) -- (word2);
+% Step 3
+\draw
+	node at (8,8)[block] (rnny3) {
+      \begin{tabular}{cc}
+      RNN \\
+      Decoder
+      \end{tabular}
+    }
+    node at (7.5,6) [block] (embedy3) {Embed}
+    node [above of=rnny3] (word3) {eine};
+
+    \draw[->](rnny2) -- node {$h_{y_2}$}(rnny3);
+    \draw[->](embedy3) -- node {$y_3$} (7.5,7.45);
+    \draw[->](word2) -- (6.1,10) -- (6.1,6) -- (embedy3);
+    \draw[->](attention) -- (8.5,4) -- node [right]{$\phi_3$}(8.5,7.45);
+    \draw[->](rnny3) -- (word3);
+
+% Step 4
+\draw
+	node at (11,8)[block] (rnny4) {
+      \begin{tabular}{cc}
+      RNN \\
+      Decoder
+      \end{tabular}
+    }
+    node at (10.5,6) [block] (embedy4) {Embed}
+    node [above of=rnny4] (word4) {Apfel};
+
+    \draw[->](rnny3) -- node {$h_{y_3}$}(rnny4);
+    \draw[->](embedy4) -- node {$y_4$} (10.5,7.45);
+    \draw[->](word3) -- (9.1,10) -- (9.1,6) -- (embedy4);
+    \draw[->](attention) -- (11.5,4) -- node [right]{$\phi_4$}(11.5,7.45);
+    \draw[->](rnny4) -- (word4);
+
+% Step 5
+\draw
+	node at (14,8)[block] (rnny5) {
+      \begin{tabular}{cc}
+      RNN \\
+      Decoder
+      \end{tabular}
+    }
+    node at (13.5,6) [block] (embedy5) {Embed}
+    node [above of=rnny5] (word5) {end\_token};
+
+    \draw[->](rnny4) -- node {$h_{y_4}$}(rnny5);
+    \draw[->](embedy5) -- node {$y_5$} (13.5,7.45);
+    \draw[->](word4) -- (12.1,10) -- (12.1,6) -- (embedy5);
+    \draw[->](attention) -- (14.5,4) -- node [right]{$\phi_5$}(14.5,7.45);
+    \draw[->](rnny5) -- (word5);
+
+\draw [color=gray,thick](0.75,5) rectangle (15.2,10.5);
+\node at (0.75,10.3) [above=5mm, right=0mm] {\textsc{Decoder}};
+\end{tikzpicture}
+\end{document}
