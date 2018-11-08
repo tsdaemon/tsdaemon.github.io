@@ -28,28 +28,20 @@ is to replace a single vector representation of the input sentence with referenc
 to representations of different words in it. On the encoding step, each word representation
 $\textbf{h}_{x_t}$ is stored as a column of matrix $\textbf{H}_x$.
 
-![Encoder-decoder-attention](/assets/images/nmt/Seq2Seq-attention.png){:width="800px"}
+![Encoder-decoder-attention](/assets/images/nmt/seq2seq-attention.png){:width="800px"}
 *Encoder-Decoder with attention*
 
 [^bengio2014]: [Bahdanau et al, 2014](https://arxiv.org/abs/1409.0473)
 
 During a decoding step, each decoder input is extended with a context vector
-$\boldsymbol{\phi}_{t-1}$:
+$\pmb{\phi}_{t-1}$:
 
-
-\begin{equation}
-\textbf{h}_{y_t}=rnn(\textbf{y}_t, )
-\label{attention1}
-\end{equation}
+$$\pmb{h}_{y_t}=rnn(\pmb{y}_t, \pmb{h}_{y_{t-1}}, \pmb{\phi}_{t-1})
+$$
 
 \begin{equation}
-\boldsymbol{h}_{y_{t-1}}
+\pmb{h}_{y_t}=rnn(\pmb{y}_t, \pmb{h}_{y_{t-1}}, \pmb{\phi}_{t-1})
 \end{equation}
-
-\begin{equation}
-\boldsymbol{\phi}_{t-1}
-\end{equation}
-
 
 Words probabilities in $\textbf{y}$ are not distributed independently; in the natural
 language phrases and sentences are usually **follow strict or non-strict rules for word selection**. Therefore,
