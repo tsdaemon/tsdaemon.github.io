@@ -7,31 +7,23 @@ subclass: 'post'
 comments: true
 ---
 
-*In [the previous tutorial]({% post_url 2018-07-08-nmt-with-pytorch-encoder-decoder %}) I have explained
-Neural Machine Translation problem and described example of the most simple neural network to solve it:
-Encoder-Decoder with a thought vector. This approach is already obsolete now
+*In [the previous tutorial]({% post_url 2018-07-08-nmt-with-pytorch-encoder-decoder %}) I have explained Neural Machine Translation problem and described example of the most simple neural network to solve it: Encoder-Decoder with a thought vector. This approach is already obsolete now
 (yeah, this industry is fast) and I used it only for educational purpose.*
 
-*Modern Seq2seq networks use attention to pass information from encoder to decoder. This great technique significantly
-improves translation accuracy and, what is also important, it helps to interpret model results.*
+*Modern Seq2seq networks use attention to pass information from encoder to decoder. This great technique significantly improves translation accuracy and, what is also important, it helps to interpret model results.*
 
 # Introduction
 
-Theoretically, a sufficiently large encoder-decoder model should be able to perform
-the machine translation perfectly. However, to encode all words and their
-dependencies in the arbitrary-length sentences, the [thought vector](https://en.wikipedia.org/wiki/Thought_vector)
-should have enormous length. Such a model would require massive computational resources
-to train and to use, therefore this approach is ineffective.
+Theoretically, a sufficiently large encoder-decoder model should be able to perform machine translation perfectly. However, to encode all words and their dependencies in the arbitrary-length sentences, the [thought vector](https://en.wikipedia.org/wiki/Thought_vector) should have enormous length. Such a model would require massive computational resources to train and to use, therefore this approach is ineffective.
 
-This problem can be solved with attention technique[^bengio2014]. Its basic idea
-is to replace a single vector representation of an input sentence with references
-to representations of different words in this sentence. During encoding, each word representation
-$\textbf{h}_{x}^{(t)}$ is stored as a column of a matrix $\textbf{H}_x$.
+This problem can be solved with attention technique. This wonderful idea was first presented in a work of Bahdanau, Cho and Bengio "Neural Machine Translation by Jointly Learning to Align and Translate"[^bengio2014]. The idea is to replace a single vector representation of an input sentence with references to representations of different words in this sentence.
+
 
 [^bengio2014]: [Bahdanau et al, 2014](https://arxiv.org/abs/1409.0473)
 
-During a decoding step, each decoder input is extended with a context vector
-$\pmb{\phi}_t$:
+## Theory
+
+During encoding, each word representation $\textbf{h}_{x}^{(t)}$ is stored as a column of a matrix $\textbf{H}_x$. During a decoding step, each decoder input is extended with a context vector $\pmb{\phi}_t$:
 
 \begin{equation}
 \pmb{h}_y^{(t)}=rnn([\pmb{y}_t, \pmb{\phi}_t], \pmb{h}_y^{(t-1)})
@@ -58,5 +50,3 @@ Using context vector each decoder step can use information from any part of the 
 
 ![Encoder-decoder-attention](/assets/images/nmt/seq2seq-attention.png){:width="800px"}
 *Encoder-Decoder with attention*
-
-# Model

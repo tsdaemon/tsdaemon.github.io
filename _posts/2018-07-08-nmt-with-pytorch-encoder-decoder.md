@@ -88,7 +88,7 @@ $\textbf{x}$.
 
 The source sentence is encoded word for word by a [*Recurrent Neural Network*](https://en.wikipedia.org/wiki/Recurrent_neural_network), which is called *Encoder*. Then **the last hidden state of the Encoder is used as the first hidden state** of another RNN[^bengio2014]. This network decodes a target sentence word for word, and this network is obviously called *Decoder*. This way a shared hidden state between Encoder and Decoder is used to store **all the information the Decoder need** to produce a valid probability distribution for $y_i$[^thought].
 
-[^thought]: This vector is called "thought vector" or "sentence vector" and this solution clearly has some drawbacks. I will present more complex technique to share information between encoder and decoder in a following tutorial.
+[^thought]: This vector is called "thought vector" or "sentence vector" and this solution clearly has some drawbacks. I will present more complex technique to share information between encoder and decoder in the following tutorial.
 
 [^bengio2014]: [Bahdanau et al, 2014](https://arxiv.org/abs/1409.0473)
 
