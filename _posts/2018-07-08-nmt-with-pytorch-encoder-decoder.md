@@ -6,6 +6,8 @@ date:   2018-07-08 15:37:21 +0300
 class: post-template
 subclass: 'post'
 comments: true
+category: education
+tag: natural language processing
 ---
 
 *Recently I did a [workshop about Deep Learning for Natural Language Processing](https://github.com/tsdaemon/dl-nlp-2018).

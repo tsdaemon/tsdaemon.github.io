@@ -1,6 +1,6 @@
 .sass-cache/
 .jekyll-metadata
-
+.jekyll-cache/
 Gemfile.lock
 package-lock.json
 node_modules/
