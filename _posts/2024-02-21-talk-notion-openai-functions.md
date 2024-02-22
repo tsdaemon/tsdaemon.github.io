@@ -11,15 +11,15 @@ tag: openai, language models, retrieval augmented generation
 
 ![Robot and human talking](/assets/images/notion-openai/Robot-and-human-talking.png)
 
-***[Retrieval Augmented Generation](https://arxiv.org/abs/2312.10997)** or RAG has proven to be one of the most substantial advancements in practical application of Large Language Models. It allows providing the necessary context to your conversational agents, practically tailoring them to your needs. Moreover, it does not require much machine learning competence to implement, and it is fairly transparent for a non-expert user.* 
+[**_Retrieval Augmented Generation_**](https://arxiv.org/abs/2312.10997) (_or RAG) has proven to be one of the most substantial advancements in the practical application of Large Language Models. It allows providing the necessary context to your conversational agents, practically tailoring them to your needs. Moreover, it only requires a little machine learning competence to implement, and it is transparent for a non-expert user._
 
-*Recently OpenAI and other LLM providers released [function calling](https://platform.openai.com/docs/guides/function-calling): a way for an LLM to call additional actions when it sees its necessary to answer your questions. This can be an alternative to RAG as you can use functions to provide personalized context from external resources. In this article I am going to explain how to use it to build a Notion assistant.*
+_Recently, OpenAI and other LLM providers released_ [_function calling_](https://platform.openai.com/docs/guides/function-calling)_: a way for an LLM to call additional actions when necessary to answer your questions. It can be an alternative to RAG, as you may use functions to provide personalized context from external resources. I will explain how to build a Notion assistant using it in this article._
 
-First, I want to mention that I absolutely love [Notion](https://www.notion.so/): I use it to keep all of my notes, and it has grown into a pretty big personal database. I keep in it my diary, my ideas, education notes, projects and many other things. And I have spend a lot of time organizing it, and I still can’t find perfect structure for it. So when I asked myself “how can I use LLMs to improve my life” my first idea was to make it help me with my Notion organization.
+First, I absolutely love [Notion](https://www.notion.so/): I use it to keep all my notes, and it has grown into an extensive personal database. I keep there my diary, ideas, education notes, projects and many other things. I invested a lot of time into organizing it, and I still can’t find the perfect structure. So when I asked myself, “How can I use LLMs to improve my life?” my first idea was to make it help me with my Notion organization.
 
-As many other services, Notion [offers an API](https://developers.notion.com/) which you can use to search pages and retrieve data from them. And said API can be called as a function by OpenAI assistant when it thinks that it needs some additional context. Sturctured API response (JSON in Notion’s case) will be used augment response generation, just as text chunks used for that in RAG. So practically, you will talk to your assistant, and it will in turn talk to Notion.
+As many other services, Notion [offers an API](https://developers.notion.com/) that you can use to search pages and retrieve data from them. And said API can be called as a function by an OpenAI assistant when it requires some additional context to help you. Structured API response (JSON in Notion’s case) will augment response generation, just as text chunks augment it in RAG. So practically, you will talk to your assistant, and it will, in turn, talk to Notion.
 
-A quick implementation of such conversational agent can be done with Python and Jupyter Notebook. I will walk though [this example](https://colab.research.google.com/drive/1ZHDN3Aj5Ms35D_njBZqk6V70u792dwwj#scrollTo=VlMtMURdRqNu) I did in Google Collab to explain the idea. In the end, I will share a code snippet you can use for an end-to-end conversation loop.
+You can implement such a conversational agent with Python and Jupyter Notebook. I will explain the idea using [this example](https://colab.research.google.com/drive/1ZHDN3Aj5Ms35D_njBZqk6V70u792dwwj#scrollTo=VlMtMURdRqNu) I did in Google Collab. And I will share a code snippet you can utilize for an end-to-end conversation loop.
 
 # Secrets
 
@@ -27,17 +27,17 @@ First, we need to configure programmatic access to OpenAI and Notion.
 
 For **OpenAI**, go to [API keys](https://platform.openai.com/api-keys) page and generate a new key. 
 
-For **Notion,** go to [My integrations](https://www.notion.so/my-integrations) page. Here you need to create an integration associated with the workspace you plan using. Get the integration token for your integration. You also need to explicitly connect all the pages you want to access with your integration:
+For **Notion,** go to [My integrations](https://www.notion.so/my-integrations) page. Here, you need to create an integration associated with the workspace you plan to use. Get the integration token for your integration. You also need to explicitly connect all the pages you want to access with your integration:
 
 ![Connect a notion page](/assets/images/notion-openai/Notion-connect.png)
 
-If you want your assistant to have access to all pages, you need to connect your integration to all parent pages in your workspace. It will extend the integration connection to child access.
+If you want your assistant to access all your pages, connect your integration to all parent pages in the workspace. It will extend the integration connection to child access.
 
-Now you can use API tokens for programmatic access.
+Now, you can use API tokens for programmatic access.
 
 # Function calling workflow
 
-First, implement functions you are going to call:
+First, implement the functions you are going to call:
 
 ```python
 def search_my_notion(query: str):
@@ -47,7 +47,7 @@ def get_notion_page_content(page_id: str):
   return notion.blocks.children.list(page_id)
 ```
 
-Next, create a new assistant in OpenAI which can access those functions:
+Next, create a new assistant in OpenAI that can access the functions:
 
 ```python
 from openai import OpenAI
@@ -101,7 +101,7 @@ Answer informally, but politely. Use Notion API access as needed. Say hello to t
 )
 ```
 
-Lets try now creating a thread and run it:
+Let's now create a thread and run it:
 
 ```python
 thread = client.beta.threads.create()
@@ -148,7 +148,7 @@ client.beta.threads.runs.submit_tool_outputs(
 )
 ```
 
-Now we should wait again for run to be executed. It may request more actions, but eventually the status will be `completed`. After that you can see the model response:
+Now, we should wait again for the run execution. It may request more actions, but eventually, the status will be `completed.` After that, you can see the model response:
 
 ```python
 messages = client.beta.threads.messages.list(
@@ -159,7 +159,7 @@ print(essages.data[0].content[0].text.value)
 
 # End-to-end example
 
-For this experiment I have prepared a ready-to-use code snippet for a chat loop which you can use in Jupyter Notebook:
+For this experiment, I have prepared a ready-to-use code snippet for a chat loop, which you can use in Jupyter Notebook:
 
 ```python
 import time
@@ -292,12 +292,12 @@ except Exception as e:
   print(traceback.format_exc())
 ```
 
-With it you will have a simple chat interface like this:
+With it, you will have a simple chat interface like this:
 
 ![Untitled](/assets/images/notion-openai/Chat-example.png)
 
-You can also add more functions. My example has only trivial read method, but if you add methods which can create or update pages, your assistant can be utmost useful. Have fun!
+You can also add more functions. My example has only a few read functions, but if you add methods to create or update pages, your assistant can be a great help. Have fun!
 
 ---
 
-Language models are a powerful tool, but one task they are not going to handle: defending Ukraine from the Russian aggression. Ukrainian Armed Forces are capable to handle that, and we are helping UAF to handle that. Right now I am supporting **PVP section**: a group of engineers engaged in construction of FPV drones, which are proven to be a simple and powerful resource for aerial reconnaissance or kamicadze attacks. You can make a one time or regular donation to PVP section [here](https://www.buymeacoffee.com/pvp_section/jotocekilu). 
+Language models are a powerful tool, but one task they will not handle is defending Ukraine from Russian aggression. Ukrainian Armed Forces can handle that, and we are helping UAF to handle that. Right now, I am supporting **PVP section**: a group of engineers engaged in the construction of FPV drones, which are proven to be a simple and powerful resource for aerial reconnaissance or kamikaze attacks. You can make a one-time or regular donation to the PVP section [here](https://www.buymeacoffee.com/pvp_section/jotocekilu). 
