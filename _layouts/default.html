@@ -4,6 +4,8 @@
   {%- include head.html -%}
   {% seo %}
 
+  
+
   <body>
 
     {%- include header.html -%}
@@ -30,7 +32,16 @@
       });
     </script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
+    <script>
+      const headings = document.querySelectorAll('h1[id],h2[id]'); // 1
+      const linkContent = '🔗'; // 2
+      for (const heading of headings) { // 3
+          const linkIcon = document.createElement('a'); // 4
+          linkIcon.setAttribute('href', `#${heading.id}`); // 5
+          linkIcon.innerHTML = linkContent; // 6
+          heading.appendChild(linkIcon); // 7
+      }
+    </script>
   </body>
 
 </html>
